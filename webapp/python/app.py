@@ -15,7 +15,9 @@ import bcrypt
 import pathlib
 import requests
 
-#from functools import lru_cache
+from category import CATEGORY_MAP 
+
+from functools import lru_cache
 
 base_path = pathlib.Path(__file__).resolve().parent.parent
 static_folder = base_path / 'public'
@@ -157,14 +159,12 @@ def get_user_simple_by_id(user_id):
         http_json_error(requests.codes['internal_server_error'], "db error")
     return user
 
-#@lru_cache(maxsize=None)
+@lru_cache(maxsize=None)
 def get_category_by_id(category_id):
-    conn = dbh()
-    sql = "SELECT * FROM `categories` WHERE `id` = %s"
-    with conn.cursor() as c:
-        c.execute(sql, (category_id,))
-        category = c.fetchone()
-        # TODO: check err
+    category_id = int(category_id)
+    if category_id not in CATEGORY_MAP:
+        return None
+    category = CATEGORY_MAP[category_id].copy()
     if category['parent_id'] != 0:
         parent = get_category_by_id(category['parent_id'])
         if parent is not None:
@@ -279,14 +279,13 @@ def post_initialize():
                 shipment_service_url
             ))
             conn.commit()
-            #get_config.cache_clear()
         except MySQLdb.Error as err:
             conn.rollback()
             app.logger.exception(err)
             http_json_error(requests.codes['internal_server_error'], "db error")
 
     return flask.jsonify({
-        "campaign": 1,  # キャンペーン実施時には還元率の設定を返す。詳しくはマニュアルを参照のこと。
+        "campaign": 3,  # キャンペーン実施時には還元率の設定を返す。詳しくはマニュアルを参照のこと。
         "language": "python" # 実装言語を返す
     })
 
@@ -391,19 +390,9 @@ def get_new_category_items(root_category_id=None):
             http_json_error(requests.codes['bad_request'], "created_at param error")
         created_at = int(created_at_str)
 
-    category_ids = []
+    category_ids = [ v['id'] for v in CATEGORY_MAP.values() if v['parent_id'] == int(root_category_id)]
     with conn.cursor() as c:
         try:
-            sql = "SELECT id FROM `categories` WHERE parent_id=%s"
-            c.execute(sql, (
-                root_category_id,
-            ))
-
-            while True:
-                category = c.fetchone()
-                if category is None:
-                    break
-                category_ids.append(category["id"])
 
             if item_id > 0 and created_at > 0:
                 sql = _select_from_items_and_users("seller_id") + " WHERE `items`.`status` IN (%s,%s) AND `items`.category_id IN ("+ ",".join(["%s"]*len(category_ids))+ ") AND (`items`.`created_at` < %s OR (`items`.`created_at` < %s AND `items`.`id` < %s)) ORDER BY `items`.`created_at` DESC, `items`.`id` DESC LIMIT %s"
@@ -772,13 +761,17 @@ def post_buy():
             if target_item['seller_id'] == buyer['id']:
                 conn.rollback()
                 http_json_error(requests.codes['forbidden'], "自分の商品は買えません")
-            sql = "SELECT * FROM `users` WHERE `id` = %s FOR UPDATE"
+            sql = "SELECT * FROM `users` WHERE `id` = %s"
             c.execute(sql, (target_item['seller_id'],))
             seller = c.fetchone()
             if seller is None:
                 conn.rollback()
                 http_json_error(requests.codes['not_found'], "seller not found")
             category = get_category_by_id(target_item['category_id'])
+            if category is None:
+                conn.rollback()
+                http_json_error(requests.codes['forbidden'], "権限がありません")
+
             # TODO: check category error
             sql = "INSERT INTO `transaction_evidences` (`seller_id`, `buyer_id`, `status`, `item_id`, `item_name`, " \
                   "`item_price`, `item_description`, `item_category_id`, `item_root_category_id`) " \
@@ -883,7 +876,7 @@ def post_sell():
         http_json_error(requests.codes['bad_request'], "商品価格は100ｲｽｺｲﾝ以上、1,000,000ｲｽｺｲﾝ以下にしてください")
 
     category = get_category_by_id(flask.request.form['category_id'])
-    if category['parent_id'] == 0:
+    if category is None or category['parent_id'] == 0:
         http_json_error(requests.codes['bad_request'], 'Incorrect category ID')
     user = get_user()
 
@@ -959,7 +952,7 @@ def post_ship():
     try:
         conn.begin()
         with conn.cursor() as c:
-            sql = "SELECT * FROM `items` WHERE `id` = %s FOR UPDATE"
+            sql = "SELECT * FROM `items` WHERE `id` = %s"
             c.execute(sql, (flask.request.json["item_id"],))
             item = c.fetchone()
             if item is None:
@@ -969,7 +962,7 @@ def post_ship():
                 conn.rollback()
                 http_json_error(requests.codes["forbidden"], "商品が取引中ではありません")
 
-            sql = "SELECT * FROM `transaction_evidences` WHERE `id` = %s FOR UPDATE"
+            sql = "SELECT * FROM `transaction_evidences` WHERE `id` = %s"
             c.execute(sql, (transaction_evidence["id"],))
             transaction_evidence = c.fetchone()
             if transaction_evidence is None:
@@ -1035,7 +1028,7 @@ def post_ship_done():
     try:
         conn.begin()
         with conn.cursor() as c:
-            sql = "SELECT * FROM `items` WHERE `id` = %s FOR UPDATE"
+            sql = "SELECT * FROM `items` WHERE `id` = %s"
             c.execute(sql, [flask.request.json["item_id"]])
             item = c.fetchone()
             if item is None:
