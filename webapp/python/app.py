@@ -752,7 +752,7 @@ def post_buy():
             if target_item['seller_id'] == buyer['id']:
                 conn.rollback()
                 http_json_error(requests.codes['forbidden'], "自分の商品は買えません")
-            sql = "SELECT * FROM `users` WHERE `id` = %s FOR UPDATE"
+            sql = "SELECT * FROM `users` WHERE `id` = %s"
             c.execute(sql, (target_item['seller_id'],))
             seller = c.fetchone()
             if seller is None:
@@ -939,7 +939,7 @@ def post_ship():
     try:
         conn.begin()
         with conn.cursor() as c:
-            sql = "SELECT * FROM `items` WHERE `id` = %s FOR UPDATE"
+            sql = "SELECT * FROM `items` WHERE `id` = %s"
             c.execute(sql, (flask.request.json["item_id"],))
             item = c.fetchone()
             if item is None:
@@ -949,7 +949,7 @@ def post_ship():
                 conn.rollback()
                 http_json_error(requests.codes["forbidden"], "商品が取引中ではありません")
 
-            sql = "SELECT * FROM `transaction_evidences` WHERE `id` = %s FOR UPDATE"
+            sql = "SELECT * FROM `transaction_evidences` WHERE `id` = %s"
             c.execute(sql, (transaction_evidence["id"],))
             transaction_evidence = c.fetchone()
             if transaction_evidence is None:
@@ -1015,7 +1015,7 @@ def post_ship_done():
     try:
         conn.begin()
         with conn.cursor() as c:
-            sql = "SELECT * FROM `items` WHERE `id` = %s FOR UPDATE"
+            sql = "SELECT * FROM `items` WHERE `id` = %s"
             c.execute(sql, [flask.request.json["item_id"]])
             item = c.fetchone()
             if item is None:
@@ -1232,10 +1232,9 @@ def post_bump():
 
             sql = "UPDATE `users` SET `last_bump`=%s WHERE id=%s"
             c.execute(sql, (now, user['id'],))
-
-            sql = "SELECT * FROM `items` WHERE `id` = %s"
-            c.execute(sql, (target_item['id'],))
-            target_item = c.fetchone()
+            
+            target_item['created_at'] = now
+            target_item['updated_at'] = now
 
         conn.commit()
     except MySQLdb.Error as err:
