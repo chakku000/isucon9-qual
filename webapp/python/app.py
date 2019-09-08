@@ -824,7 +824,7 @@ def post_buy():
 
                 async def fetch_all(loop):
                     async with aiohttp.ClientSession(loop=loop) as session:
-                    return await asyncio.gather(fetch_a(session), fetch_b(session))
+                        return await asyncio.gather(fetch_a(session), fetch_b(session))
 
                 loop = asyncio.get_event_loop()
                 shipping_res, payment_res = loop.run_until_complete(fetch_all(loop))
