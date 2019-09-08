@@ -389,7 +389,7 @@ def get_new_category_items(root_category_id=None):
             http_json_error(requests.codes['bad_request'], "created_at param error")
         created_at = int(created_at_str)
 
-    category_ids = [ v['id'] for v in CATEGORY_MAP.values() if v['parent_id'] == root_category_id]
+    category_ids = [ str(v['id']) for v in CATEGORY_MAP.values() if v['parent_id'] == root_category_id]
     with conn.cursor() as c:
         try:
 
