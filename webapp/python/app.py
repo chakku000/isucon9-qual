@@ -829,9 +829,9 @@ def post_buy():
                 loop = asyncio.get_event_loop()
                 shipping_res, payment_res = loop.run_until_complete(fetch_all(loop))
                 loop.close()
-            except err:
+            except:
                 conn.rollback()
-                app.logger.exception(err)
+                #app.logger.exception(err)
                 http_json_error(requests.codes['internal_server_error'])
 
             if payment_res['status'] == "invalid":
