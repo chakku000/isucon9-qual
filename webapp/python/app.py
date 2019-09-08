@@ -134,6 +134,13 @@ def get_user_or_none():
         return None
     return user
 
+def _select_from_items_and_users(join_column):
+    return "SELECT `items`.*," +\
+    " users.id AS " + join_column + "_id," +\
+    " users.account_name AS " + join_column + "_account_name," +\
+    " users.address AS " + join_column + "_address," +\
+    " users.num_sell_items AS " + join_column + "_num_sell_items" +\
+    " FROM `items` INNER JOIN users ON `items`." + join_column + " = `users`.id"
 
 def get_user_simple_by_id(user_id):
     try:
@@ -164,10 +171,17 @@ def get_category_by_id(category_id):
     return category
 
 
-def to_user_json(user):
-    del (user['hashed_password'], user['last_bump'], user['created_at'])
-    return user
-
+def to_user_json(user, prefix=None):
+    if not prefix:
+        del (user['hashed_password'], user['last_bump'], user['created_at'])
+        return user
+    else:
+        return {
+            'id': user[prefix + '_id'],
+            'account_name': user[prefix + '_account_name'],
+            'address': user[prefix + '_address'],
+            'num_sell_items': user[prefix + '_num_sell_items'],
+        }
 
 def to_item_json(item, simple=False):
     item["created_at"] = int(item["created_at"].timestamp())
@@ -260,6 +274,7 @@ def post_initialize():
                 shipment_service_url
             ))
             conn.commit()
+            get_config.cache_clear()
         except MySQLdb.Error as err:
             conn.rollback()
             app.logger.exception(err)
@@ -297,7 +312,9 @@ def get_new_items():
         with conn.cursor() as c:
             if item_id > 0 and created_at > 0:
                 # paging
-                sql = "SELECT * FROM `items` WHERE `status` IN (%s,%s) AND (`created_at` < %s OR (`created_at` <= %s AND `id` < %s)) ORDER BY `created_at` DESC, `id` DESC LIMIT %s"
+                sql = _select_from_items_and_users("seller_id") + \
+                " WHERE `status` IN (%s,%s) AND (`items`.`created_at` < %s OR (`items`.`created_at` <= %s AND `items`.`id` < %s))" + \
+                "ORDER BY `items`.`created_at` DESC, `items`.`id` DESC LIMIT %s"
                 c.execute(sql, (
                     Constants.ITEM_STATUS_ON_SALE,
                     Constants.ITEM_STATUS_SOLD_OUT,
@@ -308,7 +325,7 @@ def get_new_items():
                 ))
             else:
                 # 1st page
-                sql = "SELECT * FROM `items` WHERE `status` IN (%s,%s) ORDER BY `created_at` DESC, `id` DESC LIMIT %s"
+                sql = _select_from_items_and_users("seller_id") + " WHERE `items`.`status` IN (%s,%s) ORDER BY `items`.`created_at` DESC, `items`.`id` DESC LIMIT %s"
                 c.execute(sql, (
                     Constants.ITEM_STATUS_ON_SALE,
                     Constants.ITEM_STATUS_SOLD_OUT,
@@ -323,11 +340,11 @@ def get_new_items():
                 if item is None:
                     break
 
-                seller = get_user_simple_by_id(item["seller_id"])
+                # seller = get_user_simple_by_id(item["seller_id"], prefix="seller_id")
                 category = get_category_by_id(item["category_id"])
 
                 item["category"] = category
-                item["seller"] = to_user_json(seller)
+                item["seller"] = to_user_json(item, prefix="seller_id")
                 item["image_url"] = get_image_url(item["image_name"])
                 item = to_item_json(item, simple=True)
 
@@ -384,7 +401,7 @@ def get_new_category_items(root_category_id=None):
                 category_ids.append(category["id"])
 
             if item_id > 0 and created_at > 0:
-                sql = "SELECT * FROM `items` WHERE `status` IN (%s,%s) AND category_id IN ("+ ",".join(["%s"]*len(category_ids))+ ") AND (`created_at` < %s OR (`created_at` < %s AND `id` < %s)) ORDER BY `created_at` DESC, `id` DESC LIMIT %s"
+                sql = _select_from_items_and_users("seller_id") + " WHERE `items`.`status` IN (%s,%s) AND `items`.category_id IN ("+ ",".join(["%s"]*len(category_ids))+ ") AND (`items`.`created_at` < %s OR (`items`.`created_at` < %s AND `items`.`id` < %s)) ORDER BY `items`.`created_at` DESC, `items`.`id` DESC LIMIT %s"
                 c.execute(sql, (
                     Constants.ITEM_STATUS_ON_SALE,
                     Constants.ITEM_STATUS_SOLD_OUT,
@@ -396,7 +413,7 @@ def get_new_category_items(root_category_id=None):
                 ))
             else:
 
-                sql = "SELECT * FROM `items` WHERE `status` IN (%s,%s) AND category_id IN ("+ ",".join(["%s"]*len(category_ids))+ ") ORDER BY created_at DESC, id DESC LIMIT %s"
+                sql = _select_from_items_and_users("seller_id") + " WHERE `items`.`status` IN (%s,%s) AND `items`.category_id IN ("+ ",".join(["%s"]*len(category_ids))+ ") ORDER BY `items`.created_at DESC, `items`.id DESC LIMIT %s"
                 c.execute(sql, (
                     Constants.ITEM_STATUS_ON_SALE,
                     Constants.ITEM_STATUS_SOLD_OUT,
@@ -411,11 +428,11 @@ def get_new_category_items(root_category_id=None):
                 if item is None:
                     break
 
-                seller = get_user_simple_by_id(item["seller_id"])
+                # seller = get_user_simple_by_id(item["seller_id"])
                 category = get_category_by_id(item["category_id"])
 
                 item["category"] = category
-                item["seller"] = to_user_json(seller)
+                item["seller"] = to_user_json(item, prefix="seller_id")
                 item["image_url"] = get_image_url(item["image_name"])
                 item = to_item_json(item, simple=True)
 
@@ -463,7 +480,7 @@ def get_transactions():
         try:
 
             if item_id > 0 and created_at > 0:
-                sql = "SELECT * FROM `items` WHERE (`seller_id` = %s OR `buyer_id` = %s) AND `status` IN (%s,%s,%s,%s,%s) AND (`created_at` < %s OR (`created_at` <= %s AND `id` < %s)) ORDER BY `created_at` DESC, `id` DESC LIMIT %s"
+                sql = _select_from_items_and_users("seller_id") + " WHERE (`items`.`seller_id` = %s OR `items`.`buyer_id` = %s) AND `items`.`status` IN (%s,%s,%s,%s,%s) AND (`items`.`created_at` < %s OR (`items`.`created_at` <= %s AND `items`.`id` < %s)) ORDER BY `items`.`created_at` DESC, `items`.`id` DESC LIMIT %s"
                 c.execute(sql, (
                     user['id'],
                     user['id'],
@@ -479,7 +496,7 @@ def get_transactions():
                 ))
 
             else:
-                sql = "SELECT * FROM `items` WHERE (`seller_id` = %s OR `buyer_id` = %s ) AND `status` IN (%s,%s,%s,%s,%s) ORDER BY `created_at` DESC, `id` DESC LIMIT %s"
+                sql = _select_from_items_and_users("seller_id") + " WHERE (`items`.`seller_id` = %s OR `items`.`buyer_id` = %s ) AND `items`.`status` IN (%s,%s,%s,%s,%s) ORDER BY `items`.`created_at` DESC, `items`.`id` DESC LIMIT %s"
                 c.execute(sql, [
                     user['id'],
                     user['id'],
@@ -498,11 +515,11 @@ def get_transactions():
                 if item is None:
                     break
 
-                seller = get_user_simple_by_id(item["seller_id"])
+                # seller = get_user_simple_by_id(item["seller_id"])
                 category = get_category_by_id(item["category_id"])
 
                 item["category"] = category
-                item["seller"] = to_user_json(seller)
+                item["seller"] = to_user_json(item, prefix="seller_id")
                 item["image_url"] = get_image_url(item["image_name"])
                 item = to_item_json(item, simple=False)
 
@@ -564,7 +581,7 @@ def get_user_items(user_id=None):
     with conn.cursor() as c:
         try:
             if item_id > 0 and created_at > 0:
-                sql = "SELECT * FROM `items` WHERE `seller_id` = %s AND `status` IN (%s,%s,%s) AND (`created_at` < %s OR (`created_at` <= %s AND `id` < %s)) ORDER BY `created_at` DESC, `id` DESC LIMIT %s"
+                sql = _select_from_items_and_users("seller_id") + " WHERE `items`.`seller_id` = %s AND `items`.`status` IN (%s,%s,%s) AND (`items`.`created_at` < %s OR (`items`.`created_at` <= %s AND `items`.`id` < %s)) ORDER BY `items`.`created_at` DESC, `items`.`id` DESC LIMIT %s"
                 c.execute(sql, (
                     user['id'],
                     Constants.ITEM_STATUS_ON_SALE,
@@ -577,7 +594,7 @@ def get_user_items(user_id=None):
                 ))
 
             else:
-                sql = "SELECT * FROM `items` WHERE `seller_id` = %s AND `status` IN (%s,%s,%s) ORDER BY `created_at` DESC, `id` DESC LIMIT %s"
+                sql = _select_from_items_and_users("seller_id") + " WHERE `items`.`seller_id` = %s AND `items`.`status` IN (%s,%s,%s) ORDER BY `items`.`created_at` DESC, `items`.`id` DESC LIMIT %s"
                 c.execute(sql, (
                     user['id'],
                     Constants.ITEM_STATUS_ON_SALE,
@@ -593,11 +610,11 @@ def get_user_items(user_id=None):
                 if item is None:
                     break
 
-                seller = get_user_simple_by_id(item["seller_id"])
+                # seller = get_user_simple_by_id(item["seller_id"])
                 category = get_category_by_id(item["category_id"])
 
                 item["category"] = category
-                item["seller"] = to_user_json(seller)
+                item["seller"] = to_user_json(item, prefix="seller_id")
                 item["image_url"] = get_image_url(item["image_name"])
                 item = to_item_json(item, simple=True)
                 item_simples.append(item)
@@ -625,17 +642,17 @@ def get_item(item_id=None):
 
     with conn.cursor() as c:
         try:
-            sql = "SELECT * FROM `items` WHERE `id` = %s"
+            sql = _select_from_items_and_users("seller_id") + " WHERE `items`.`id` = %s"
             c.execute(sql, (item_id,))
             item = c.fetchone()
             if item is None:
                 http_json_error(requests.codes['not_found'], "item not found")
 
-            seller = get_user_simple_by_id(item["seller_id"])
+            # seller = get_user_simple_by_id(item["seller_id"])
             category = get_category_by_id(item["category_id"])
 
             item["category"] = category
-            item["seller"] = to_user_json(seller)
+            item["seller"] = to_user_json(item, prefix="seller_id")
             item["image_url"] = get_image_url(item["image_name"])
             item = to_item_json(item, simple=False)
 
