@@ -798,10 +798,6 @@ def post_buy():
                 target_item['id'],
             ))
 
-            
-                session.get()
-
-
             try:
                 async def fetch_a(session):
                     async with session.post(get_shipment_service_url() + "/create",
