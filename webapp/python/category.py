@@ -44,4 +44,4 @@ CATEGORIES = [
   (66,60,"空気椅子")
 ]
 
-CATEGORY_MAP = { i:{'name': name, 'parent_id': parent, 'category_name':name} for (i, parent, name) in CATEGORIES }
+CATEGORY_MAP = { i:{ 'id': i, 'parent_id': parent, 'category_name':name} for (i, parent, name) in CATEGORIES }
