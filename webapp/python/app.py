@@ -8,12 +8,14 @@ import string
 import datetime
 import subprocess
 import time
+import asyncio
 
 import MySQLdb.cursors
 import flask
 import bcrypt
 import pathlib
 import requests
+import aiohttp
 
 from category import CATEGORY_MAP 
 
@@ -796,40 +798,47 @@ def post_buy():
                 target_item['id'],
             ))
 
-            host = get_shipment_service_url()
+            
+                session.get()
+
+
             try:
-                res = requests.post(host + "/create",
-                                    headers=dict(Authorization=Constants.ISUCARI_API_TOKEN),
-                                    json=dict(
-                                        to_address=buyer['address'],
-                                        to_name=buyer['account_name'],
-                                        from_address=seller['address'],
-                                            from_name=seller['account_name'],
-                                    ))
-                res.raise_for_status()
-            except (socket.gaierror, requests.HTTPError) as err:
+                async def fetch_a(session):
+                    async with session.post(get_shipment_service_url() + "/create",
+                                            headers=dict(Authorization=Constants.ISUCARI_API_TOKEN),
+                                            json=dict(
+                                                to_address=buyer['address'],
+                                                to_name=buyer['account_name'],
+                                                from_address=seller['address'],
+                                                    from_name=seller['account_name'],
+                                            )) as response:
+                        response.raise_for_status()
+                        return await response.json()
+
+                async def fetch_b(session):
+                    async with session.post(get_payment_service_url() + "/token",
+                                            json=dict(
+                                                shop_id=Constants.PAYMENT_SERVICE_ISUCARI_SHOP_ID,
+                                                api_key=Constants.PAYMENT_SERVICE_ISUCARI_API_KEY,
+                                                token=flask.request.json['token'],
+                                                price=target_item['price'],
+                                            )) as response:
+                        response.raise_for_status()
+                        return await response.json()
+
+                async def fetch_all(loop):
+                    async with aiohttp.ClientSession(loop=loop) as session:
+                    return await asyncio.gather(fetch_a(session), fetch_b(session))
+
+                loop = asyncio.get_event_loop()
+                shipping_res, payment_res = loop.run_until_complete(fetch_all(loop))
+                loop.close()
+            except err:
                 conn.rollback()
                 app.logger.exception(err)
                 http_json_error(requests.codes['internal_server_error'])
 
-            shipping_res = res.json()
-
-            host = get_payment_service_url()
-            try:
-                res = requests.post(host + "/token",
-                                    json=dict(
-                                        shop_id=Constants.PAYMENT_SERVICE_ISUCARI_SHOP_ID,
-                                        api_key=Constants.PAYMENT_SERVICE_ISUCARI_API_KEY,
-                                        token=flask.request.json['token'],
-                                        price=target_item['price'],
-                                    ))
-                res.raise_for_status()
-            except (socket.gaierror, requests.HTTPError) as err:
-                conn.rollback()
-                app.logger.exception(err)
-                http_json_error(requests.codes['internal_server_error'])
-
-            payment_res = res.json()
+             = res.json()
             if payment_res['status'] == "invalid":
                 conn.rollback()
                 http_json_error(requests.codes["bad_request"], "カード情報に誤りがあります")
