@@ -312,8 +312,8 @@ def get_new_items():
             if item_id > 0 and created_at > 0:
                 # paging
                 sql = _select_from_items_and_users("seller_id") + \
-                " WHERE `status` IN (%s,%s) AND (`created_at` < %s OR (`created_at` <= %s AND `id` < %s))" + \
-                "ORDER BY `created_at` DESC, `id` DESC LIMIT %s"
+                " WHERE `status` IN (%s,%s) AND (`items`.`created_at` < %s OR (`items`.`created_at` <= %s AND `items`.`id` < %s))" + \
+                "ORDER BY `items`.`created_at` DESC, `items`.`id` DESC LIMIT %s"
                 c.execute(sql, (
                     Constants.ITEM_STATUS_ON_SALE,
                     Constants.ITEM_STATUS_SOLD_OUT,
@@ -324,7 +324,7 @@ def get_new_items():
                 ))
             else:
                 # 1st page
-                sql = _select_from_items_and_users("seller_id") + " WHERE `status` IN (%s,%s) ORDER BY `created_at` DESC, `id` DESC LIMIT %s"
+                sql = _select_from_items_and_users("seller_id") + " WHERE `items`.`status` IN (%s,%s) ORDER BY `items`.`created_at` DESC, `items`.`id` DESC LIMIT %s"
                 c.execute(sql, (
                     Constants.ITEM_STATUS_ON_SALE,
                     Constants.ITEM_STATUS_SOLD_OUT,
@@ -400,7 +400,7 @@ def get_new_category_items(root_category_id=None):
                 category_ids.append(category["id"])
 
             if item_id > 0 and created_at > 0:
-                sql = _select_from_items_and_users("seller_id") + " WHERE `status` IN (%s,%s) AND category_id IN ("+ ",".join(["%s"]*len(category_ids))+ ") AND (`created_at` < %s OR (`created_at` < %s AND `id` < %s)) ORDER BY `created_at` DESC, `id` DESC LIMIT %s"
+                sql = _select_from_items_and_users("seller_id") + " WHERE `items`.`status` IN (%s,%s) AND `items`.category_id IN ("+ ",".join(["%s"]*len(category_ids))+ ") AND (`items`.`created_at` < %s OR (`items`.`created_at` < %s AND `items`.`id` < %s)) ORDER BY `items`.`created_at` DESC, `items`.`id` DESC LIMIT %s"
                 c.execute(sql, (
                     Constants.ITEM_STATUS_ON_SALE,
                     Constants.ITEM_STATUS_SOLD_OUT,
@@ -412,7 +412,7 @@ def get_new_category_items(root_category_id=None):
                 ))
             else:
 
-                sql = _select_from_items_and_users("seller_id") + " WHERE `status` IN (%s,%s) AND category_id IN ("+ ",".join(["%s"]*len(category_ids))+ ") ORDER BY created_at DESC, id DESC LIMIT %s"
+                sql = _select_from_items_and_users("seller_id") + " WHERE `items`.`status` IN (%s,%s) AND `items`.category_id IN ("+ ",".join(["%s"]*len(category_ids))+ ") ORDER BY `items`.created_at DESC, `items`.id DESC LIMIT %s"
                 c.execute(sql, (
                     Constants.ITEM_STATUS_ON_SALE,
                     Constants.ITEM_STATUS_SOLD_OUT,
@@ -479,7 +479,7 @@ def get_transactions():
         try:
 
             if item_id > 0 and created_at > 0:
-                sql = _select_from_items_and_users("seller_id") + " WHERE (`seller_id` = %s OR `buyer_id` = %s) AND `status` IN (%s,%s,%s,%s,%s) AND (`created_at` < %s OR (`created_at` <= %s AND `id` < %s)) ORDER BY `created_at` DESC, `id` DESC LIMIT %s"
+                sql = _select_from_items_and_users("seller_id") + " WHERE (`items`.`seller_id` = %s OR `items`.`buyer_id` = %s) AND `items`.`status` IN (%s,%s,%s,%s,%s) AND (`items`.`created_at` < %s OR (`items`.`created_at` <= %s AND `items`.`id` < %s)) ORDER BY `items`.`created_at` DESC, `items`.`id` DESC LIMIT %s"
                 c.execute(sql, (
                     user['id'],
                     user['id'],
@@ -495,7 +495,7 @@ def get_transactions():
                 ))
 
             else:
-                sql = _select_from_items_and_users("seller_id") + " WHERE (`seller_id` = %s OR `buyer_id` = %s ) AND `status` IN (%s,%s,%s,%s,%s) ORDER BY `created_at` DESC, `id` DESC LIMIT %s"
+                sql = _select_from_items_and_users("seller_id") + " WHERE (`items`.`seller_id` = %s OR `items`.`buyer_id` = %s ) AND `items`.`status` IN (%s,%s,%s,%s,%s) ORDER BY `items`.`created_at` DESC, `items`.`id` DESC LIMIT %s"
                 c.execute(sql, [
                     user['id'],
                     user['id'],
@@ -580,7 +580,7 @@ def get_user_items(user_id=None):
     with conn.cursor() as c:
         try:
             if item_id > 0 and created_at > 0:
-                sql = _select_from_items_and_users("seller_id") + " WHERE `seller_id` = %s AND `status` IN (%s,%s,%s) AND (`created_at` < %s OR (`created_at` <= %s AND `id` < %s)) ORDER BY `created_at` DESC, `id` DESC LIMIT %s"
+                sql = _select_from_items_and_users("seller_id") + " WHERE `items`.`seller_id` = %s AND `items`.`status` IN (%s,%s,%s) AND (`items`.`created_at` < %s OR (`items`.`created_at` <= %s AND `items`.`id` < %s)) ORDER BY `items`.`created_at` DESC, `items`.`id` DESC LIMIT %s"
                 c.execute(sql, (
                     user['id'],
                     Constants.ITEM_STATUS_ON_SALE,
@@ -593,7 +593,7 @@ def get_user_items(user_id=None):
                 ))
 
             else:
-                sql = _select_from_items_and_users("seller_id") + " WHERE `seller_id` = %s AND `status` IN (%s,%s,%s) ORDER BY `created_at` DESC, `id` DESC LIMIT %s"
+                sql = _select_from_items_and_users("seller_id") + " WHERE `items`.`seller_id` = %s AND `items`.`status` IN (%s,%s,%s) ORDER BY `items`.`created_at` DESC, `items`.`id` DESC LIMIT %s"
                 c.execute(sql, (
                     user['id'],
                     Constants.ITEM_STATUS_ON_SALE,
@@ -641,7 +641,7 @@ def get_item(item_id=None):
 
     with conn.cursor() as c:
         try:
-            sql = _select_from_items_and_users("seller_id") + " WHERE `id` = %s"
+            sql = _select_from_items_and_users("seller_id") + " WHERE `items`.`id` = %s"
             c.execute(sql, (item_id,))
             item = c.fetchone()
             if item is None:
