@@ -834,7 +834,6 @@ def post_buy():
                 app.logger.exception(err)
                 http_json_error(requests.codes['internal_server_error'])
 
-             = res.json()
             if payment_res['status'] == "invalid":
                 conn.rollback()
                 http_json_error(requests.codes["bad_request"], "カード情報に誤りがあります")
