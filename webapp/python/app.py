@@ -1392,7 +1392,7 @@ from wsgi_lineprof.filters import FilenameFilter, TotalTimeSorter
 from wsgi_lineprof.middleware import LineProfilerMiddleware
 app.config["PROFILE"] = True
 filters = [
-    FilenameFilter("/mnt/D/works/isucon/isucon9-qual/webapp/python/app.py"),
+    FilenameFilter("/home/isucon/isucari/webapp/python/app.py"),
     #TotalTimeSorter(),
     lambda stats: filter(stat_filter, stats),
 ]
