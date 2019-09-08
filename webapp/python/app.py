@@ -14,6 +14,8 @@ import bcrypt
 import pathlib
 import requests
 
+from functools import lru_cache
+
 base_path = pathlib.Path(__file__).resolve().parent.parent
 static_folder = base_path / 'public'
 
@@ -147,7 +149,7 @@ def get_user_simple_by_id(user_id):
         http_json_error(requests.codes['internal_server_error'], "db error")
     return user
 
-category_cache = dict()
+
 def get_category_by_id(category_id):
     if category_id in category_cache:
         return category_cache[category_id]
@@ -199,7 +201,7 @@ def ensure_valid_csrf_token():
     if flask.request.json['csrf_token'] != flask.session['csrf_token']:
         http_json_error(requests.codes['unprocessable_entity'], "csrf token error")
 
-
+@lru_cache
 def get_config(name):
     conn = dbh()
     sql = "SELECT * FROM `configs` WHERE `name` = %s"
