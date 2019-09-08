@@ -30,10 +30,10 @@ CREATE TABLE `items` (
   `category_id` int unsigned NOT NULL,
   `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  INDEX idx_category_id (`category_id`)
-  INDEX idx_status (`status`)
-  INDEX idx_created_at (`created_at`)
-  INDEX idx_seller_id (`seller_id`)
+  INDEX idx_category_id (`category_id`),
+  INDEX idx_status (`status`),
+  INDEX idx_created_at (`created_at`),
+  INDEX idx_seller_id (`seller_id`),
   INDEX idx_buyer_id (`buyer_id`)
 ) ENGINE=InnoDB DEFAULT CHARACTER SET utf8mb4;
 
