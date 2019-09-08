@@ -274,6 +274,7 @@ def post_initialize():
                 shipment_service_url
             ))
             conn.commit()
+            get_config.cache_clear()
         except MySQLdb.Error as err:
             conn.rollback()
             app.logger.exception(err)
