@@ -147,7 +147,7 @@ def get_user_simple_by_id(user_id):
         http_json_error(requests.codes['internal_server_error'], "db error")
     return user
 
-category_cache = []
+category_cache = dict()
 def get_category_by_id(category_id):
     if category_id in category_cache:
         return category_cache[category_id]
