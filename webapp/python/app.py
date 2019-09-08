@@ -161,6 +161,7 @@ def get_user_simple_by_id(user_id):
 
 @lru_cache(maxsize=None)
 def get_category_by_id(category_id):
+    category_id = int(category_id)
     if category_id not in CATEGORY_MAP:
         return None
     category = CATEGORY_MAP[category_id].copy()
@@ -389,7 +390,7 @@ def get_new_category_items(root_category_id=None):
             http_json_error(requests.codes['bad_request'], "created_at param error")
         created_at = int(created_at_str)
 
-    category_ids = [ str(v['id']) for v in CATEGORY_MAP.values() if v['parent_id'] == root_category_id]
+    category_ids = [ v['id'] for v in CATEGORY_MAP.values() if v['parent_id'] == int(root_category_id)]
     with conn.cursor() as c:
         try:
 
