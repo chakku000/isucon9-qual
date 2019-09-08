@@ -768,7 +768,7 @@ def post_buy():
                 conn.rollback()
                 http_json_error(requests.codes['not_found'], "seller not found")
             category = get_category_by_id(target_item['category_id'])
-            if category is None
+            if category is None:
                 conn.rollback()
                 http_json_error(requests.codes['forbidden'], "権限がありません")
 
