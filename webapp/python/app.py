@@ -232,18 +232,23 @@ def get_shipment_service_url():
 
 
 def api_shipment_status(shipment_url, params={}):
-
-    try:
-        res = requests.post(
-            shipment_url + "/status",
-            headers=dict(Authorization=Constants.ISUCARI_API_TOKEN),
-            json=params,
-        )
-        res.raise_for_status()
-    except (socket.gaierror, requests.HTTPError) as err:
-        app.logger.exception(err)
-        http_json_error(requests.codes['internal_server_error'])
-
+    import time
+    start = time.time()
+    while 1:
+        try:
+            res = requests.post(
+                shipment_url + "/status",
+                headers=dict(Authorization=Constants.ISUCARI_API_TOKEN),
+                json=params,
+            )
+            res.raise_for_status()
+            break
+        except (socket.gaierror, requests.HTTPError) as err:
+            app.logger.exception(err)
+            elapsed = time.time() - start
+            if elapsed >= 5:
+                http_json_error(requests.codes['internal_server_error'])
+                break
     return res.json()
 
 
