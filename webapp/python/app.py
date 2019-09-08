@@ -7,6 +7,7 @@ import random
 import string
 import datetime
 import subprocess
+import time
 
 import MySQLdb.cursors
 import flask
@@ -232,7 +233,6 @@ def get_shipment_service_url():
 
 
 def api_shipment_status(shipment_url, params={}):
-    import time
     start = time.time()
     while 1:
         try:
