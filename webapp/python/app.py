@@ -147,19 +147,23 @@ def get_user_simple_by_id(user_id):
         http_json_error(requests.codes['internal_server_error'], "db error")
     return user
 
-
+category_cache = []
 def get_category_by_id(category_id):
-    conn = dbh()
-    sql = "SELECT * FROM `categories` WHERE `id` = %s"
-    with conn.cursor() as c:
-        c.execute(sql, (category_id,))
-        category = c.fetchone()
-        # TODO: check err
-    if category['parent_id'] != 0:
-        parent = get_category_by_id(category['parent_id'])
-        if parent is not None:
-            category['parent_category_name'] = parent['category_name']
-    return category
+    if category_id in category_cache:
+        return category_cache[category_id]
+    else:
+        conn = dbh()
+        sql = "SELECT * FROM `categories` WHERE `id` = %s"
+        with conn.cursor() as c:
+            c.execute(sql, (category_id,))
+            category = c.fetchone()
+            # TODO: check err
+        if category['parent_id'] != 0:
+            parent = get_category_by_id(category['parent_id'])
+            if parent is not None:
+                category['parent_category_name'] = parent['category_name']
+        category_cache[category_id] = category
+        return category
 
 
 def to_user_json(user):
