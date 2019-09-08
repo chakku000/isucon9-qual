@@ -285,7 +285,7 @@ def post_initialize():
             http_json_error(requests.codes['internal_server_error'], "db error")
 
     return flask.jsonify({
-        "campaign": 1,  # キャンペーン実施時には還元率の設定を返す。詳しくはマニュアルを参照のこと。
+        "campaign": 4,  # キャンペーン実施時には還元率の設定を返す。詳しくはマニュアルを参照のこと。
         "language": "python" # 実装言語を返す
     })
 
