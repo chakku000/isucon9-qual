@@ -7,6 +7,7 @@ import random
 import string
 import datetime
 import subprocess
+import time
 
 import MySQLdb.cursors
 import flask
@@ -158,6 +159,7 @@ def get_user_simple_by_id(user_id):
         http_json_error(requests.codes['internal_server_error'], "db error")
     return user
 
+@lru_cache(maxsize=None)
 def get_category_by_id(category_id):
     category = CATEGORY_MAP[category_id]
     if category['parent_id'] != 0:
@@ -207,7 +209,7 @@ def ensure_valid_csrf_token():
     if flask.request.json['csrf_token'] != flask.session['csrf_token']:
         http_json_error(requests.codes['unprocessable_entity'], "csrf token error")
 
-@lru_cache(maxsize=None)
+#@lru_cache(maxsize=None)
 def get_config(name):
     conn = dbh()
     sql = "SELECT * FROM `configs` WHERE `name` = %s"
@@ -228,18 +230,22 @@ def get_shipment_service_url():
 
 
 def api_shipment_status(shipment_url, params={}):
-
-    try:
-        res = requests.post(
-            shipment_url + "/status",
-            headers=dict(Authorization=Constants.ISUCARI_API_TOKEN),
-            json=params,
-        )
-        res.raise_for_status()
-    except (socket.gaierror, requests.HTTPError) as err:
-        app.logger.exception(err)
-        http_json_error(requests.codes['internal_server_error'])
-
+    start = time.time()
+    while 1:
+        try:
+            res = requests.post(
+                shipment_url + "/status",
+                headers=dict(Authorization=Constants.ISUCARI_API_TOKEN),
+                json=params,
+            )
+            res.raise_for_status()
+            break
+        except (socket.gaierror, requests.HTTPError) as err:
+            app.logger.exception(err)
+            elapsed = time.time() - start
+            if elapsed >= 5:
+                http_json_error(requests.codes['internal_server_error'])
+                break
     return res.json()
 
 
@@ -1232,7 +1238,7 @@ def post_bump():
 
             sql = "UPDATE `users` SET `last_bump`=%s WHERE id=%s"
             c.execute(sql, (now, user['id'],))
-            
+
             target_item['created_at'] = now
             target_item['updated_at'] = now
 
