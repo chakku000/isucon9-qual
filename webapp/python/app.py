@@ -15,7 +15,7 @@ import bcrypt
 import pathlib
 import requests
 
-from CATEGORY_MAP import category
+from category import CATEGORY_MAP 
 
 from functools import lru_cache
 
