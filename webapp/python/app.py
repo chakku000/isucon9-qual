@@ -136,11 +136,11 @@ def get_user_or_none():
 
 def _select_from_items_and_users(join_column):
     return "SELECT `items`.*," +\
-    "users.id AS " + join_column + "_id," +\
-    "users.account_name AS " + join_column + "_account_name," +\
-    "users.address AS " + join_column + "_address," +\
-    "users.num_sell_items AS " + join_column + "_num_sell_items" +\
-    "FROM `items` LEFT JOIN users ON `items`." + join_column + " = `users`.id"
+    " users.id AS " + join_column + "_id," +\
+    " users.account_name AS " + join_column + "_account_name," +\
+    " users.address AS " + join_column + "_address," +\
+    " users.num_sell_items AS " + join_column + "_num_sell_items" +\
+    " FROM `items` INNER JOIN users ON `items`." + join_column + " = `users`.id"
 
 def get_user_simple_by_id(user_id):
     try:
