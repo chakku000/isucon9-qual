@@ -1,0 +1,1143 @@
+                                file_name  line    avg_per_time   hits    total_time       graph                                                                                                                                                                                                                                                                                                                                           code
+-----------------------------------------  ----  --------------  -----  ------------  ----------  ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+/home/isucon/isucari/webapp/python/app.py    60               0      0             0              def __init__(self, status_code, message):
+/home/isucon/isucari/webapp/python/app.py    61        2120.278     18         38165                  Exception.__init__(self)
+/home/isucon/isucari/webapp/python/app.py    62        1542.944     18         27773                  self.message = message
+/home/isucon/isucari/webapp/python/app.py    63         958.333     18         17250                  self.status_code = status_code
+/home/isucon/isucari/webapp/python/app.py    65               0      0             0              def get_response(self):
+/home/isucon/isucari/webapp/python/app.py    66       679196.15     20      13583923                  response = flask.jsonify({'error': self.message})
+/home/isucon/isucari/webapp/python/app.py    67        6757.905     21        141916                  response.status_code = self.status_code
+/home/isucon/isucari/webapp/python/app.py    68          346.81     21          7283                  return response
+/home/isucon/isucari/webapp/python/app.py    71               0      0             0              def dbh():
+/home/isucon/isucari/webapp/python/app.py    72       25958.433    609      15808686                  if hasattr(flask.g, 'db'):
+/home/isucon/isucari/webapp/python/app.py    73       17522.811    424       7429672                      return flask.g.db
+/home/isucon/isucari/webapp/python/app.py    74               0      0             0
+/home/isucon/isucari/webapp/python/app.py    75        1104.092    184        203153                  flask.g.db = MySQLdb.connect(
+/home/isucon/isucari/webapp/python/app.py    76       35847.707    184       6595978                      host=os.getenv('MYSQL_HOST', '127.0.0.1'),
+/home/isucon/isucari/webapp/python/app.py    77       17572.158    183       3215705                      port=int(os.getenv('MYSQL_PORT', 3306)),
+/home/isucon/isucari/webapp/python/app.py    78       15401.661    183       2818504                      user=os.getenv('MYSQL_USER', 'isucari'),
+/home/isucon/isucari/webapp/python/app.py    79       80825.311    183      14791032                      password=os.getenv('MYSQL_PASS', 'isucari'),
+/home/isucon/isucari/webapp/python/app.py    80       15747.825    183       2881852                      db=os.getenv('MYSQL_DBNAME', 'isucari'),
+/home/isucon/isucari/webapp/python/app.py    81         484.984    183         88752                      charset='utf8mb4',
+/home/isucon/isucari/webapp/python/app.py    82         1216.41    183        222603                      cursorclass=MySQLdb.cursors.DictCursor,
+/home/isucon/isucari/webapp/python/app.py    83     9601115.956    180    1728200872                       autocommit=True,
+/home/isucon/isucari/webapp/python/app.py    84               0      0             0                  )
+/home/isucon/isucari/webapp/python/app.py    85       42868.931    202       8659524                  cur = flask.g.db.cursor()
+/home/isucon/isucari/webapp/python/app.py    86         795.401    202        160671                  cur.execute(
+/home/isucon/isucari/webapp/python/app.py    87     2722802.395    200     544560479                      "SET SESSION sql_mode='STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION'")
+/home/isucon/isucari/webapp/python/app.py    88       28643.904    219       6273015                  return flask.g.db
+/home/isucon/isucari/webapp/python/app.py    91               0      0             0              def http_json_error(code, msg):
+/home/isucon/isucari/webapp/python/app.py    92         11469.6     20        229392                  raise HttpException(code, msg)
+/home/isucon/isucari/webapp/python/app.py    95               0      0             0              @app.errorhandler(HttpException)
+/home/isucon/isucari/webapp/python/app.py    96               0      0             0              def handle_http_exception(error):
+/home/isucon/isucari/webapp/python/app.py    97      679917.545     22      14958186                  return error.get_response()
+/home/isucon/isucari/webapp/python/app.py   100               0      0             0              def random_string(length):
+/home/isucon/isucari/webapp/python/app.py   101        2500.902     51        127546                  letters = string.ascii_lowercase + string.digits
+/home/isucon/isucari/webapp/python/app.py   102      182044.242    810     147455836                    return ''.join(random.choice(letters) for _ in range(length))
+/home/isucon/isucari/webapp/python/app.py   103               0      0             0
+/home/isucon/isucari/webapp/python/app.py   104               0      0             0
+/home/isucon/isucari/webapp/python/app.py   105               0      0             0              def get_user():
+/home/isucon/isucari/webapp/python/app.py   106       25317.147    136       3443132                  user_id = flask.session.get("user_id")
+/home/isucon/isucari/webapp/python/app.py   107         509.338    136         69270                  if user_id is None:
+/home/isucon/isucari/webapp/python/app.py   108               0      0             0                      http_json_error(requests.codes['not_found'], "no session")
+/home/isucon/isucari/webapp/python/app.py   109         415.853    136         56556                  try:
+/home/isucon/isucari/webapp/python/app.py   110    11054726.537    134    1481333356                       conn = dbh()
+/home/isucon/isucari/webapp/python/app.py   111       104755.16    156      16341805                      with conn.cursor() as c:
+/home/isucon/isucari/webapp/python/app.py   112         455.929    156         71125                          sql = "SELECT * FROM `users` WHERE `id` = %s"
+/home/isucon/isucari/webapp/python/app.py   113     3284168.222    153     502477738                          c.execute(sql, [user_id])
+/home/isucon/isucari/webapp/python/app.py   114       11760.019    160       1881603                          user = c.fetchone()
+/home/isucon/isucari/webapp/python/app.py   115        44714.25    160       7154280                          if user is None:
+/home/isucon/isucari/webapp/python/app.py   116               0      0             0                              http_json_error(requests.codes['not_found'], "user not found")
+/home/isucon/isucari/webapp/python/app.py   117               0      0             0                  except MySQLdb.Error as err:
+/home/isucon/isucari/webapp/python/app.py   118               0      0             0                      app.logger.exception(err)
+/home/isucon/isucari/webapp/python/app.py   119               0      0             0                      http_json_error(requests.codes['internal_server_error'], "db error")
+/home/isucon/isucari/webapp/python/app.py   120         586.608    158         92684                  return user
+/home/isucon/isucari/webapp/python/app.py   123               0      0             0              def get_user_or_none():
+/home/isucon/isucari/webapp/python/app.py   124         23776.0     15        356640                  user_id = flask.session.get("user_id")
+/home/isucon/isucari/webapp/python/app.py   125         432.867     15          6493                  if user_id is None:
+/home/isucon/isucari/webapp/python/app.py   126               0      0             0                      return None
+/home/isucon/isucari/webapp/python/app.py   127           368.0     15          5520                  try:
+/home/isucon/isucari/webapp/python/app.py   128    24686939.846     13     320930218                        conn = dbh()
+/home/isucon/isucari/webapp/python/app.py   129       25706.813     16        411309                      with conn.cursor() as c:
+/home/isucon/isucari/webapp/python/app.py   130         499.125     16          7986                          sql = "SELECT * FROM `users` WHERE `id` = %s"
+/home/isucon/isucari/webapp/python/app.py   131    11776998.875     16     188431982                          c.execute(sql, [user_id])
+/home/isucon/isucari/webapp/python/app.py   132        11977.32     25        299433                          user = c.fetchone()
+/home/isucon/isucari/webapp/python/app.py   133        50199.44     25       1254986                          if user is None:
+/home/isucon/isucari/webapp/python/app.py   134               0      0             0                              return None
+/home/isucon/isucari/webapp/python/app.py   135               0      0             0                  except MySQLdb.Error as err:
+/home/isucon/isucari/webapp/python/app.py   136               0      0             0                      app.logger.exception(err)
+/home/isucon/isucari/webapp/python/app.py   137               0      0             0                      return None
+/home/isucon/isucari/webapp/python/app.py   138          607.48     25         15187                  return user
+/home/isucon/isucari/webapp/python/app.py   140               0      0             0              def _select_from_items_and_users(join_column):
+/home/isucon/isucari/webapp/python/app.py   141               0      0             0                  return "SELECT `items`.*," +\
+/home/isucon/isucari/webapp/python/app.py   142               0      0             0                  " users.id AS " + join_column + "_id," +\
+/home/isucon/isucari/webapp/python/app.py   143               0      0             0                  " users.account_name AS " + join_column + "_account_name," +\
+/home/isucon/isucari/webapp/python/app.py   144               0      0             0                  " users.address AS " + join_column + "_address," +\
+/home/isucon/isucari/webapp/python/app.py   145               0      0             0                  " users.num_sell_items AS " + join_column + "_num_sell_items" +\
+/home/isucon/isucari/webapp/python/app.py   146        3066.473    148        453838                  " FROM `items` INNER JOIN users ON `items`." + join_column + " = `users`.id"
+/home/isucon/isucari/webapp/python/app.py   148               0      0             0              def get_user_simple_by_id(user_id):
+/home/isucon/isucari/webapp/python/app.py   149           433.0     30         12990                  try:
+/home/isucon/isucari/webapp/python/app.py   150       2985481.0     29      86578949                      conn = dbh()
+/home/isucon/isucari/webapp/python/app.py   151        22624.59     39        882359                      with conn.cursor() as c:
+/home/isucon/isucari/webapp/python/app.py   152         405.692     39         15822                          sql = "SELECT * FROM `users` WHERE `id` = %s"
+/home/isucon/isucari/webapp/python/app.py   153     3174898.333     39     123821035                           c.execute(sql, [user_id])
+/home/isucon/isucari/webapp/python/app.py   154       10029.957     46        461378                          user = c.fetchone()
+/home/isucon/isucari/webapp/python/app.py   155       43839.891     46       2016635                          if user is None:
+/home/isucon/isucari/webapp/python/app.py   156               0      0             0                              http_json_error(requests.codes['not_found'], "user not found")
+/home/isucon/isucari/webapp/python/app.py   157               0      0             0                  except MySQLdb.Error as err:
+/home/isucon/isucari/webapp/python/app.py   158               0      0             0                      app.logger.exception(err)
+/home/isucon/isucari/webapp/python/app.py   159               0      0             0                      http_json_error(requests.codes['internal_server_error'], "db error")
+/home/isucon/isucari/webapp/python/app.py   160         530.261     46         24392                  return user
+/home/isucon/isucari/webapp/python/app.py   162               0      0             0              @lru_cache(maxsize=None)
+/home/isucon/isucari/webapp/python/app.py   163               0      0             0              def get_category_by_id(category_id):
+/home/isucon/isucari/webapp/python/app.py   164        1520.088     57         86645                  category_id = int(category_id)
+/home/isucon/isucari/webapp/python/app.py   165         694.246     57         39572                  if category_id not in CATEGORY_MAP:
+/home/isucon/isucari/webapp/python/app.py   166               0      0             0                      return None
+/home/isucon/isucari/webapp/python/app.py   167        1235.509     57         70424                  category = CATEGORY_MAP[category_id].copy()
+/home/isucon/isucari/webapp/python/app.py   168         484.526     57         27618                  if category['parent_id'] != 0:
+/home/isucon/isucari/webapp/python/app.py   169         676.447     47         31793                      parent = get_category_by_id(category['parent_id'])
+/home/isucon/isucari/webapp/python/app.py   170         448.723     47         21090                      if parent is not None:
+/home/isucon/isucari/webapp/python/app.py   171         622.426     47         29254                          category['parent_category_name'] = parent['category_name']
+/home/isucon/isucari/webapp/python/app.py   172         317.895     57         18120                  return category
+/home/isucon/isucari/webapp/python/app.py   175               0      0             0              def to_user_json(user, prefix=None):
+/home/isucon/isucari/webapp/python/app.py   176          503.77   2496       1257409                  if not prefix:
+/home/isucon/isucari/webapp/python/app.py   177        1884.182    154        290164                      del (user['hashed_password'], user['last_bump'], user['created_at'])
+/home/isucon/isucari/webapp/python/app.py   178         400.474    154         61673                      return user
+/home/isucon/isucari/webapp/python/app.py   179               0      0             0                  else:
+/home/isucon/isucari/webapp/python/app.py   180               0      0             0                      return {
+/home/isucon/isucari/webapp/python/app.py   181          814.12   2343       1907482                          'id': user[prefix + '_id'],
+/home/isucon/isucari/webapp/python/app.py   182         638.521   2343       1496054                          'account_name': user[prefix + '_account_name'],
+/home/isucon/isucari/webapp/python/app.py   183       10461.029   2343      24510192                          'address': user[prefix + '_address'],
+/home/isucon/isucari/webapp/python/app.py   184         800.767   2343       1876198                          'num_sell_items': user[prefix + '_num_sell_items'],
+/home/isucon/isucari/webapp/python/app.py   185               0      0             0                      }
+/home/isucon/isucari/webapp/python/app.py   187               0      0             0              def to_item_json(item, simple=False):
+/home/isucon/isucari/webapp/python/app.py   188        4622.383   2154       9956613                  item["created_at"] = int(item["created_at"].timestamp())
+/home/isucon/isucari/webapp/python/app.py   189        2148.201   2154       4627226                  item["updated_at"] = int(item["updated_at"].timestamp())
+/home/isucon/isucari/webapp/python/app.py   190               0      0             0
+/home/isucon/isucari/webapp/python/app.py   191               0      0             0                  keys = (
+/home/isucon/isucari/webapp/python/app.py   192       16355.856   2154      35230514                      "id", "seller_id", "seller", "buyer_id", "buyer", "status", "name", "price", "description",
+/home/isucon/isucari/webapp/python/app.py   193               0      0             0                      "image_url", "category_id", "category", "transaction_evidence_id", "transaction_evidence_status",
+/home/isucon/isucari/webapp/python/app.py   194               0      0             0                      "shipping_status", "created_at",
+/home/isucon/isucari/webapp/python/app.py   195               0      0             0                  )
+/home/isucon/isucari/webapp/python/app.py   196               0      0             0
+/home/isucon/isucari/webapp/python/app.py   197         582.874   2154       1255511                  if simple:
+/home/isucon/isucari/webapp/python/app.py   198         569.001   1797       1022495                      keys = ("id", "seller_id", "seller", "status", "name", "price", "image_url", "category_id", "category", "created_at")
+/home/isucon/isucari/webapp/python/app.py   199               0      0             0
+/home/isucon/isucari/webapp/python/app.py   200        3588.306  40932     146876533                  return {k:v for k,v in item.items() if k in keys}
+/home/isucon/isucari/webapp/python/app.py   201               0      0             0
+/home/isucon/isucari/webapp/python/app.py   202               0      0             0
+/home/isucon/isucari/webapp/python/app.py   203               0      0             0                             def ensure_required_payload(keys=None):
+/home/isucon/isucari/webapp/python/app.py   204         611.563     16          9785                                 if keys is None:
+/home/isucon/isucari/webapp/python/app.py   205               0      0             0                                     keys = []
+/home/isucon/isucari/webapp/python/app.py   206         794.708     48         38146                                 for k in keys:
+/home/isucon/isucari/webapp/python/app.py   207     1345128.219     32      43044103                                     if not flask.request.json.get(k):
+/home/isucon/isucari/webapp/python/app.py   208               0      0             0                                         http_json_error(requests.codes['bad_request'], 'all parameters are required')
+/home/isucon/isucari/webapp/python/app.py   211               0      0             0              def ensure_valid_csrf_token():
+/home/isucon/isucari/webapp/python/app.py   212      346036.179     28       9689013                  if flask.request.json['csrf_token'] != flask.session['csrf_token']:
+/home/isucon/isucari/webapp/python/app.py   213      108128.333      3        324385                      http_json_error(requests.codes['unprocessable_entity'], "csrf token error")
+/home/isucon/isucari/webapp/python/app.py   216               0      0             0              def get_config(name):
+/home/isucon/isucari/webapp/python/app.py   217       52424.606    175       9174306                  conn = dbh()
+/home/isucon/isucari/webapp/python/app.py   218         422.103    175         73868                  sql = "SELECT * FROM `configs` WHERE `name` = %s"
+/home/isucon/isucari/webapp/python/app.py   219        26582.08    175       4651864                  with conn.cursor() as c:
+/home/isucon/isucari/webapp/python/app.py   220      2510756.24    175     439382342                      c.execute(sql, (name,))
+/home/isucon/isucari/webapp/python/app.py   221       54274.931    189      10257962                      config = c.fetchone()
+/home/isucon/isucari/webapp/python/app.py   222         470.212    189         88870                  return config
+/home/isucon/isucari/webapp/python/app.py   225               0      0             0              def get_payment_service_url():
+/home/isucon/isucari/webapp/python/app.py   226     4538429.488     41     186075609                  config = get_config("payment_service_url")
+/home/isucon/isucari/webapp/python/app.py   227         946.068     44         41627                  return Constants.DEFAULT_PAYMENT_SERVICE_URL if config is None else config['val']
+/home/isucon/isucari/webapp/python/app.py   230               0      0             0              def get_shipment_service_url():
+/home/isucon/isucari/webapp/python/app.py   231     1711148.188    128     219026968                  config = get_config("shipment_service_url")
+/home/isucon/isucari/webapp/python/app.py   232         864.956    137        118499                  return Constants.DEFAULT_SHIPMENT_SERVICE_URL if config is None else config['val']
+/home/isucon/isucari/webapp/python/app.py   235               0      0             0              def api_shipment_status(shipment_url, params={}):
+/home/isucon/isucari/webapp/python/app.py   236        2202.508    427        940471                  start = time.time()
+/home/isucon/isucari/webapp/python/app.py   237         701.929    425        298320                  while 1:
+/home/isucon/isucari/webapp/python/app.py   238         652.781    485        316599                      try:
+/home/isucon/isucari/webapp/python/app.py   239        1576.367    485        764538                          res = requests.post(
+/home/isucon/isucari/webapp/python/app.py   240        1182.957    485        573734                              shipment_url + "/status",
+/home/isucon/isucari/webapp/python/app.py   241        2906.435    485       1409621                              headers=dict(Authorization=Constants.ISUCARI_API_TOKEN),
+/home/isucon/isucari/webapp/python/app.py   242   448606262.894    424  190209055467  **********                  json=params,
+/home/isucon/isucari/webapp/python/app.py   243               0      0             0                          )
+/home/isucon/isucari/webapp/python/app.py   244       82037.019    475      38967584                          res.raise_for_status()
+/home/isucon/isucari/webapp/python/app.py   245         793.269    446        353798                          break
+/home/isucon/isucari/webapp/python/app.py   246        4326.724     29        125475                      except (socket.gaierror, requests.HTTPError) as err:
+/home/isucon/isucari/webapp/python/app.py   247     8889183.276     29     257786315                          app.logger.exception(err)
+/home/isucon/isucari/webapp/python/app.py   248        2553.586     29         74054                          elapsed = time.time() - start
+/home/isucon/isucari/webapp/python/app.py   249        2995.414     29         86867                          if elapsed >= 5:
+/home/isucon/isucari/webapp/python/app.py   250         19673.0      1         19673                              http_json_error(requests.codes['internal_server_error'])
+/home/isucon/isucari/webapp/python/app.py   251               0      0             0                              break
+/home/isucon/isucari/webapp/python/app.py   252      126636.934    439      55593614                  return res.json()
+/home/isucon/isucari/webapp/python/app.py   255               0      0             0              def get_image_url(image_name):
+/home/isucon/isucari/webapp/python/app.py   256        1219.217   2173       2649359                  return "/upload/{}".format(image_name)
+/home/isucon/isucari/webapp/python/app.py   259               0      0             0              @app.route("/initialize", methods=["POST"])
+/home/isucon/isucari/webapp/python/app.py   260               0      0             0              def post_initialize():
+/home/isucon/isucari/webapp/python/app.py   261       6153235.0      2      12306470                   conn = dbh()
+/home/isucon/isucari/webapp/python/app.py   262               0      0             0
+/home/isucon/isucari/webapp/python/app.py   263    7358219676.5      2   14716439353  *           .9      subprocess.call(["../sql/init.sh"])
+/home/isucon/isucari/webapp/python/app.py   264               0      0             0
+/home/isucon/isucari/webapp/python/app.py   265        751625.5      2       1503251                  payment_service_url = flask.request.json.get('payment_service_url', Constants.DEFAULT_PAYMENT_SERVICE_URL)
+/home/isucon/isucari/webapp/python/app.py   266         24938.5      2         49877                  shipment_service_url = flask.request.json.get('shipment_service_url', Constants.DEFAULT_SHIPMENT_SERVICE_URL)
+/home/isucon/isucari/webapp/python/app.py   267               0      0             0
+/home/isucon/isucari/webapp/python/app.py   268        133134.5      2        266269                  conn.begin()
+/home/isucon/isucari/webapp/python/app.py   269         45271.5      2         90543                  with conn.cursor() as c:
+/home/isucon/isucari/webapp/python/app.py   270           516.0      2          1032                      try:
+/home/isucon/isucari/webapp/python/app.py   271          1347.0      2          2694                          sql = "INSERT INTO `configs` (`name`, `val`) VALUES (%s, %s) ON DUPLICATE KEY UPDATE `val` = VALUES(`val`)"
+/home/isucon/isucari/webapp/python/app.py   272               0      0             0
+/home/isucon/isucari/webapp/python/app.py   273          1735.5      2          3471                          c.execute(sql, (
+/home/isucon/isucari/webapp/python/app.py   274           427.5      2           855                              "payment_service_url",
+/home/isucon/isucari/webapp/python/app.py   275        556006.5      2       1112013                              payment_service_url
+/home/isucon/isucari/webapp/python/app.py   276               0      0             0                          ))
+/home/isucon/isucari/webapp/python/app.py   277           676.0      2          1352                          c.execute(sql, (
+/home/isucon/isucari/webapp/python/app.py   278           459.5      2           919                              "shipment_service_url",
+/home/isucon/isucari/webapp/python/app.py   279        249133.5      2        498267                              shipment_service_url
+/home/isucon/isucari/webapp/python/app.py   280               0      0             0                          ))
+/home/isucon/isucari/webapp/python/app.py   281       1756544.5      2       3513089                           conn.commit()
+/home/isucon/isucari/webapp/python/app.py   282               0      0             0                      except MySQLdb.Error as err:
+/home/isucon/isucari/webapp/python/app.py   283               0      0             0                          conn.rollback()
+/home/isucon/isucari/webapp/python/app.py   284               0      0             0                          app.logger.exception(err)
+/home/isucon/isucari/webapp/python/app.py   285               0      0             0                          http_json_error(requests.codes['internal_server_error'], "db error")
+/home/isucon/isucari/webapp/python/app.py   286               0      0             0
+/home/isucon/isucari/webapp/python/app.py   287          3324.0      2          6648                  return flask.jsonify({
+/home/isucon/isucari/webapp/python/app.py   288           468.0      2           936                      "campaign": 3,  # キャンペーン実施時には還元率の設定を返す。詳しくはマニュアルを参照のこと。
+/home/isucon/isucari/webapp/python/app.py   289        658225.0      2       1316450                      "language": "python" # 実装言語を返す
+/home/isucon/isucari/webapp/python/app.py   290               0      0             0                  })
+/home/isucon/isucari/webapp/python/app.py   293               0      0             0              @app.route("/new_items.json", methods=["GET"])
+/home/isucon/isucari/webapp/python/app.py   294               0      0             0              def get_new_items():
+/home/isucon/isucari/webapp/python/app.py   295               0      0             0                  # TODO: check err
+/home/isucon/isucari/webapp/python/app.py   296               0      0             0
+/home/isucon/isucari/webapp/python/app.py   297        1067.889      9          9611                  item_id = 0
+/home/isucon/isucari/webapp/python/app.py   298         921.778      9          8296                  created_at = 0
+/home/isucon/isucari/webapp/python/app.py   299               0      0             0
+/home/isucon/isucari/webapp/python/app.py   300     4986775.889      9      44880983                  item_id_str = flask.request.args.get('item_id')
+/home/isucon/isucari/webapp/python/app.py   301        1056.222      9          9506                  if item_id_str:
+/home/isucon/isucari/webapp/python/app.py   302        4227.714      7         29594                      if not item_id_str.isdecimal() or int(item_id_str) < 0:
+/home/isucon/isucari/webapp/python/app.py   303               0      0             0                          http_json_error(requests.codes['bad_request'], "item_id param error")
+/home/isucon/isucari/webapp/python/app.py   304        1584.143      7         11089                      item_id = int(item_id_str)
+/home/isucon/isucari/webapp/python/app.py   305               0      0             0
+/home/isucon/isucari/webapp/python/app.py   306       56401.667      9        507615                  created_at_str = flask.request.args.get('created_at')
+/home/isucon/isucari/webapp/python/app.py   307        1018.333      9          9165                  if created_at_str:
+/home/isucon/isucari/webapp/python/app.py   308          2742.0      7         19194                      if not created_at_str.isdecimal() or int(created_at_str) < 0:
+/home/isucon/isucari/webapp/python/app.py   309               0      0             0                          http_json_error(requests.codes['bad_request'], "created_at param error")
+/home/isucon/isucari/webapp/python/app.py   310        1485.143      7         10396                      created_at = int(created_at_str)
+/home/isucon/isucari/webapp/python/app.py   311               0      0             0
+/home/isucon/isucari/webapp/python/app.py   312        1071.333      9          9642                  items = []
+/home/isucon/isucari/webapp/python/app.py   313               0      0             0
+/home/isucon/isucari/webapp/python/app.py   314        1000.778      9          9007                  try:
+/home/isucon/isucari/webapp/python/app.py   315    28009026.778      9     252081241                       conn = dbh()
+/home/isucon/isucari/webapp/python/app.py   316       52181.778      9        469636                      with conn.cursor() as c:
+/home/isucon/isucari/webapp/python/app.py   317          1277.0      9         11493                          if item_id > 0 and created_at > 0:
+/home/isucon/isucari/webapp/python/app.py   318               0      0             0                              # paging
+/home/isucon/isucari/webapp/python/app.py   319               0      0             0                              sql = _select_from_items_and_users("seller_id") + \
+/home/isucon/isucari/webapp/python/app.py   320       12210.429      7         85473                              " WHERE `status` IN (%s,%s) AND (`items`.`created_at` < %s OR (`items`.`created_at` <= %s AND `items`.`id` < %s))" + \
+/home/isucon/isucari/webapp/python/app.py   321        1684.143      7         11789                              "ORDER BY `items`.`created_at` DESC, `items`.`id` DESC LIMIT %s"
+/home/isucon/isucari/webapp/python/app.py   322        1236.857      7          8658                              c.execute(sql, (
+/home/isucon/isucari/webapp/python/app.py   323        1898.429      7         13289                                  Constants.ITEM_STATUS_ON_SALE,
+/home/isucon/isucari/webapp/python/app.py   324        1953.714      7         13676                                  Constants.ITEM_STATUS_SOLD_OUT,
+/home/isucon/isucari/webapp/python/app.py   325         14138.0      7         98966                                  datetime.datetime.fromtimestamp(created_at),
+/home/isucon/isucari/webapp/python/app.py   326        2857.571      7         20003                                  datetime.datetime.fromtimestamp(created_at),
+/home/isucon/isucari/webapp/python/app.py   327        1086.571      7          7606                                  item_id,
+/home/isucon/isucari/webapp/python/app.py   328    16890464.143      7     118233249                                  Constants.ITEMS_PER_PAGE + 1,
+/home/isucon/isucari/webapp/python/app.py   329               0      0             0                              ))
+/home/isucon/isucari/webapp/python/app.py   330               0      0             0                          else:
+/home/isucon/isucari/webapp/python/app.py   331               0      0             0                              # 1st page
+/home/isucon/isucari/webapp/python/app.py   332          9657.5      2         19315                              sql = _select_from_items_and_users("seller_id") + " WHERE `items`.`status` IN (%s,%s) ORDER BY `items`.`created_at` DESC, `items`.`id` DESC LIMIT %s"
+/home/isucon/isucari/webapp/python/app.py   333           821.5      2          1643                              c.execute(sql, (
+/home/isucon/isucari/webapp/python/app.py   334          1491.5      2          2983                                  Constants.ITEM_STATUS_ON_SALE,
+/home/isucon/isucari/webapp/python/app.py   335           831.0      2          1662                                  Constants.ITEM_STATUS_SOLD_OUT,
+/home/isucon/isucari/webapp/python/app.py   336       3302087.5      2       6604175                                   Constants.ITEMS_PER_PAGE + 1
+/home/isucon/isucari/webapp/python/app.py   337               0      0             0                              ))
+/home/isucon/isucari/webapp/python/app.py   338               0      0             0
+/home/isucon/isucari/webapp/python/app.py   339        1394.111      9         12547                          item_simples = []
+/home/isucon/isucari/webapp/python/app.py   340               0      0             0
+/home/isucon/isucari/webapp/python/app.py   341         980.667      9          8826                          while True:
+/home/isucon/isucari/webapp/python/app.py   342      107429.569    450      48343306                              item = c.fetchone()
+/home/isucon/isucari/webapp/python/app.py   343               0      0             0
+/home/isucon/isucari/webapp/python/app.py   344        1032.878    450        464795                              if item is None:
+/home/isucon/isucari/webapp/python/app.py   345        1063.889      9          9575                                  break
+/home/isucon/isucari/webapp/python/app.py   346               0      0             0
+/home/isucon/isucari/webapp/python/app.py   347               0      0             0                              # seller = get_user_simple_by_id(item["seller_id"], prefix="seller_id")
+/home/isucon/isucari/webapp/python/app.py   348        2487.503    441       1096989                              category = get_category_by_id(item["category_id"])
+/home/isucon/isucari/webapp/python/app.py   349               0      0             0
+/home/isucon/isucari/webapp/python/app.py   350        1191.939    441        525645                              item["category"] = category
+/home/isucon/isucari/webapp/python/app.py   351       73434.556    441      32384639                              item["seller"] = to_user_json(item, prefix="seller_id")
+/home/isucon/isucari/webapp/python/app.py   352        4205.639    441       1854687                              item["image_url"] = get_image_url(item["image_name"])
+/home/isucon/isucari/webapp/python/app.py   353      325936.229    441     143737877                              item = to_item_json(item, simple=True)
+/home/isucon/isucari/webapp/python/app.py   354               0      0             0
+/home/isucon/isucari/webapp/python/app.py   355        1325.946    441        584742                              item_simples.append(item)
+/home/isucon/isucari/webapp/python/app.py   356               0      0             0
+/home/isucon/isucari/webapp/python/app.py   357        1321.333      9         11892                          has_next = False
+/home/isucon/isucari/webapp/python/app.py   358          2147.0      9         19323                          if len(item_simples) > Constants.ITEMS_PER_PAGE:
+/home/isucon/isucari/webapp/python/app.py   359          1024.0      9          9216                              has_next = True
+/home/isucon/isucari/webapp/python/app.py   360     2147580.333      9      19328223                              item_simples = item_simples[:Constants.ITEMS_PER_PAGE]
+/home/isucon/isucari/webapp/python/app.py   361               0      0             0
+/home/isucon/isucari/webapp/python/app.py   362               0      0             0                  except MySQLdb.Error as err:
+/home/isucon/isucari/webapp/python/app.py   363               0      0             0                      app.logger.exception(err)
+/home/isucon/isucari/webapp/python/app.py   364               0      0             0                      http_json_error(requests.codes['internal_server_error'], "db error")
+/home/isucon/isucari/webapp/python/app.py   365               0      0             0
+/home/isucon/isucari/webapp/python/app.py   366        2579.444      9         23215                  return flask.jsonify(dict(
+/home/isucon/isucari/webapp/python/app.py   367         988.444      9          8896                      items=item_simples,
+/home/isucon/isucari/webapp/python/app.py   368    23797579.222      9     214178213                        has_next=has_next,
+/home/isucon/isucari/webapp/python/app.py   369               0      0             0                  ))
+/home/isucon/isucari/webapp/python/app.py   372               0      0             0              @app.route("/new_items/<root_category_id>.json", methods=["GET"])
+/home/isucon/isucari/webapp/python/app.py   373               0      0             0              def get_new_category_items(root_category_id=None):
+/home/isucon/isucari/webapp/python/app.py   374    38457156.828     29    1115257548                  conn = dbh()
+/home/isucon/isucari/webapp/python/app.py   375               0      0             0
+/home/isucon/isucari/webapp/python/app.py   376        6258.765     34        212798                  root_category = get_category_by_id(root_category_id)
+/home/isucon/isucari/webapp/python/app.py   377               0      0             0
+/home/isucon/isucari/webapp/python/app.py   378        1209.618     34         41127                  item_id = 0
+/home/isucon/isucari/webapp/python/app.py   379        1146.441     34         38979                  created_at = 0
+/home/isucon/isucari/webapp/python/app.py   380               0      0             0
+/home/isucon/isucari/webapp/python/app.py   381      875005.294     34      29750180                  item_id_str = flask.request.args.get('item_id')
+/home/isucon/isucari/webapp/python/app.py   382        1278.088     34         43455                  if item_id_str:
+/home/isucon/isucari/webapp/python/app.py   383        4251.185     27        114782                      if not item_id_str.isdecimal() or int(item_id_str) < 0:
+/home/isucon/isucari/webapp/python/app.py   384               0      0             0                          http_json_error(requests.codes['bad_request'], "item_id param error")
+/home/isucon/isucari/webapp/python/app.py   385        1803.741     27         48701                      item_id = int(item_id_str)
+/home/isucon/isucari/webapp/python/app.py   386               0      0             0
+/home/isucon/isucari/webapp/python/app.py   387       56585.242     33       1867313                  created_at_str = flask.request.args.get('created_at')
+/home/isucon/isucari/webapp/python/app.py   388        1193.424     33         39383                  if created_at_str:
+/home/isucon/isucari/webapp/python/app.py   389        2729.885     26         70977                      if not created_at_str.isdecimal() or int(created_at_str) < 0:
+/home/isucon/isucari/webapp/python/app.py   390               0      0             0                          http_json_error(requests.codes['bad_request'], "created_at param error")
+/home/isucon/isucari/webapp/python/app.py   391        1771.346     26         46055                      created_at = int(created_at_str)
+/home/isucon/isucari/webapp/python/app.py   392               0      0             0
+/home/isucon/isucari/webapp/python/app.py   393       11255.074    297       3342757                  category_ids = [ v['id'] for v in CATEGORY_MAP.values() if v['parent_id'] == int(root_category_id)]
+/home/isucon/isucari/webapp/python/app.py   394       65119.848     33       2148955                  with conn.cursor() as c:
+/home/isucon/isucari/webapp/python/app.py   395        1509.788     33         49823                      try:
+/home/isucon/isucari/webapp/python/app.py   396               0      0             0
+/home/isucon/isucari/webapp/python/app.py   397        1481.364     33         48885                          if item_id > 0 and created_at > 0:
+/home/isucon/isucari/webapp/python/app.py   398       16366.846     26        425538                              sql = _select_from_items_and_users("seller_id") + " WHERE `items`.`status` IN (%s,%s) AND `items`.category_id IN ("+ ",".join(["%s"]*len(category_ids))+ ") AND (`items`.`created_at` < %s OR (`items`.`created_at` < %s AND `items`.`id` < %s)) ORDER BY `items`.`created_at` DESC, `items`.`id` DESC LIMIT %s"
+/home/isucon/isucari/webapp/python/app.py   399        1578.269     26         41035                              c.execute(sql, (
+/home/isucon/isucari/webapp/python/app.py   400        2097.692     26         54540                                  Constants.ITEM_STATUS_ON_SALE,
+/home/isucon/isucari/webapp/python/app.py   401         2076.12     25         51903                                  Constants.ITEM_STATUS_SOLD_OUT,
+/home/isucon/isucari/webapp/python/app.py   402         1240.76     25         31019                                  *category_ids,
+/home/isucon/isucari/webapp/python/app.py   403        10247.68     25        256192                                  datetime.datetime.fromtimestamp(created_at),
+/home/isucon/isucari/webapp/python/app.py   404         3348.64     25         83716                                  datetime.datetime.fromtimestamp(created_at),
+/home/isucon/isucari/webapp/python/app.py   405         1237.92     25         30948                                  item_id,
+/home/isucon/isucari/webapp/python/app.py   406      29721115.8     25     743027895                                  Constants.ITEMS_PER_PAGE + 1,
+/home/isucon/isucari/webapp/python/app.py   407               0      0             0                              ))
+/home/isucon/isucari/webapp/python/app.py   408               0      0             0                          else:
+/home/isucon/isucari/webapp/python/app.py   409               0      0             0
+/home/isucon/isucari/webapp/python/app.py   410       10423.286      7         72963                              sql = _select_from_items_and_users("seller_id") + " WHERE `items`.`status` IN (%s,%s) AND `items`.category_id IN ("+ ",".join(["%s"]*len(category_ids))+ ") ORDER BY `items`.created_at DESC, `items`.id DESC LIMIT %s"
+/home/isucon/isucari/webapp/python/app.py   411        1050.714      7          7355                              c.execute(sql, (
+/home/isucon/isucari/webapp/python/app.py   412        1569.857      7         10989                                  Constants.ITEM_STATUS_ON_SALE,
+/home/isucon/isucari/webapp/python/app.py   413        1143.286      7          8003                                  Constants.ITEM_STATUS_SOLD_OUT,
+/home/isucon/isucari/webapp/python/app.py   414         788.571      7          5520                                  *category_ids,
+/home/isucon/isucari/webapp/python/app.py   415       6607471.0      7      46252297                                   Constants.ITEMS_PER_PAGE + 1,
+/home/isucon/isucari/webapp/python/app.py   416               0      0             0                              ))
+/home/isucon/isucari/webapp/python/app.py   417               0      0             0
+/home/isucon/isucari/webapp/python/app.py   418        1628.531     32         52113                          item_simples = []
+/home/isucon/isucari/webapp/python/app.py   419        1221.812     32         39098                          while True:
+/home/isucon/isucari/webapp/python/app.py   420       92650.312   1600     148240499                              item = c.fetchone()
+/home/isucon/isucari/webapp/python/app.py   421               0      0             0
+/home/isucon/isucari/webapp/python/app.py   422       25278.091   1600      40444946                              if item is None:
+/home/isucon/isucari/webapp/python/app.py   423       65615.625     32       2099700                                  break
+/home/isucon/isucari/webapp/python/app.py   424               0      0             0
+/home/isucon/isucari/webapp/python/app.py   425               0      0             0                              # seller = get_user_simple_by_id(item["seller_id"])
+/home/isucon/isucari/webapp/python/app.py   426        1968.259   1568       3086230                              category = get_category_by_id(item["category_id"])
+/home/isucon/isucari/webapp/python/app.py   427               0      0             0
+/home/isucon/isucari/webapp/python/app.py   428        1457.193   1568       2284878                              item["category"] = category
+/home/isucon/isucari/webapp/python/app.py   429      108632.513   1568     170335780                              item["seller"] = to_user_json(item, prefix="seller_id")
+/home/isucon/isucari/webapp/python/app.py   430       16466.362   1568      25819256                              item["image_url"] = get_image_url(item["image_name"])
+/home/isucon/isucari/webapp/python/app.py   431      280567.328   1568     439929570                              item = to_item_json(item, simple=True)
+/home/isucon/isucari/webapp/python/app.py   432               0      0             0
+/home/isucon/isucari/webapp/python/app.py   433        3968.085   1568       6221957                              item_simples.append(item)
+/home/isucon/isucari/webapp/python/app.py   434               0      0             0
+/home/isucon/isucari/webapp/python/app.py   435               0      0             0                      except MySQLdb.Error as err:
+/home/isucon/isucari/webapp/python/app.py   436               0      0             0                          app.logger.exception(err)
+/home/isucon/isucari/webapp/python/app.py   437               0      0             0                          http_json_error(requests.codes['internal_server_error'], "db error")
+/home/isucon/isucari/webapp/python/app.py   438               0      0             0
+/home/isucon/isucari/webapp/python/app.py   439        1336.281     32         42761                  has_next = False
+/home/isucon/isucari/webapp/python/app.py   440        2572.875     32         82332                  if len(item_simples) > Constants.ITEMS_PER_PAGE:
+/home/isucon/isucari/webapp/python/app.py   441        1370.125     32         43844                      has_next = True
+/home/isucon/isucari/webapp/python/app.py   442          3788.5     32        121232                      item_simples = item_simples[:Constants.ITEMS_PER_PAGE]
+/home/isucon/isucari/webapp/python/app.py   443               0      0             0
+/home/isucon/isucari/webapp/python/app.py   444        2606.656     32         83413                  return flask.jsonify(dict(
+/home/isucon/isucari/webapp/python/app.py   445        1988.281     32         63625                      root_category_id=root_category["id"],
+/home/isucon/isucari/webapp/python/app.py   446        1474.437     32         47182                      root_category_name=root_category["category_name"],
+/home/isucon/isucari/webapp/python/app.py   447         1560.25     32         49928                      items=item_simples,
+/home/isucon/isucari/webapp/python/app.py   448    17306476.759     29     501887826                      has_next=has_next,
+/home/isucon/isucari/webapp/python/app.py   449               0      0             0                  ))
+/home/isucon/isucari/webapp/python/app.py   450               0      0             0
+/home/isucon/isucari/webapp/python/app.py   451               0      0             0
+/home/isucon/isucari/webapp/python/app.py   452               0      0             0                             @app.route("/users/transactions.json", methods=["GET"])
+/home/isucon/isucari/webapp/python/app.py   453               0      0             0                             def get_transactions():
+/home/isucon/isucari/webapp/python/app.py   454     9837324.641     92     905033867                                 user = get_user()
+/home/isucon/isucari/webapp/python/app.py   455       64054.957     94       6021166                                 conn = dbh()
+/home/isucon/isucari/webapp/python/app.py   456               0      0             0
+/home/isucon/isucari/webapp/python/app.py   457        1170.819     94        110057                                 item_id = 0
+/home/isucon/isucari/webapp/python/app.py   458         1123.83     94        105640                                 created_at = 0
+/home/isucon/isucari/webapp/python/app.py   459               0      0             0
+/home/isucon/isucari/webapp/python/app.py   460      436770.245     94      41056403                                 item_id_str = flask.request.args.get('item_id')
+/home/isucon/isucari/webapp/python/app.py   461        1315.819     94        123687                                 if item_id_str:
+/home/isucon/isucari/webapp/python/app.py   462          3980.5     48        191064                                     if not item_id_str.isdecimal() or int(item_id_str) < 0:
+/home/isucon/isucari/webapp/python/app.py   463               0      0             0                                         http_json_error(requests.codes['bad_request'], "item_id param error")
+/home/isucon/isucari/webapp/python/app.py   464        1863.958     48         89470                                     item_id = int(item_id_str)
+/home/isucon/isucari/webapp/python/app.py   465               0      0             0
+/home/isucon/isucari/webapp/python/app.py   466       60666.819     94       5702681                                 created_at_str = flask.request.args.get('created_at')
+/home/isucon/isucari/webapp/python/app.py   467        1207.426     94        113498                                 if created_at_str:
+/home/isucon/isucari/webapp/python/app.py   468        2611.833     48        125368                                     if not created_at_str.isdecimal() or int(created_at_str) < 0:
+/home/isucon/isucari/webapp/python/app.py   469               0      0             0                                         http_json_error(requests.codes['bad_request'], "created_at param error")
+/home/isucon/isucari/webapp/python/app.py   470        1708.083     48         81988                                     created_at = int(created_at_str)
+/home/isucon/isucari/webapp/python/app.py   471               0      0             0
+/home/isucon/isucari/webapp/python/app.py   472       31722.202     94       2981887                                 with conn.cursor() as c:
+/home/isucon/isucari/webapp/python/app.py   473               0      0             0
+/home/isucon/isucari/webapp/python/app.py   474        1173.351     94        110295                                     try:
+/home/isucon/isucari/webapp/python/app.py   475               0      0             0
+/home/isucon/isucari/webapp/python/app.py   476        1517.851     94        142678                                         if item_id > 0 and created_at > 0:
+/home/isucon/isucari/webapp/python/app.py   477       10977.687     48        526929                                             sql = _select_from_items_and_users("seller_id") + " WHERE (`items`.`seller_id` = %s OR `items`.`buyer_id` = %s) AND `items`.`status` IN (%s,%s,%s,%s,%s) AND (`items`.`created_at` < %s OR (`items`.`created_at` <= %s AND `items`.`id` < %s)) ORDER BY `items`.`created_at` DESC, `items`.`id` DESC LIMIT %s"
+/home/isucon/isucari/webapp/python/app.py   478        1443.667     48         69296                                             c.execute(sql, (
+/home/isucon/isucari/webapp/python/app.py   479        1710.521     48         82105                                                 user['id'],
+/home/isucon/isucari/webapp/python/app.py   480        1493.354     48         71681                                                 user['id'],
+/home/isucon/isucari/webapp/python/app.py   481        1967.937     48         94461                                                 Constants.ITEM_STATUS_ON_SALE,
+/home/isucon/isucari/webapp/python/app.py   482        2060.896     48         98923                                                 Constants.ITEM_STATUS_TRADING,
+/home/isucon/isucari/webapp/python/app.py   483        1560.458     48         74902                                                 Constants.ITEM_STATUS_SOLD_OUT,
+/home/isucon/isucari/webapp/python/app.py   484        1686.809     47         79280                                                 Constants.ITEM_STATUS_CANCEL,
+/home/isucon/isucari/webapp/python/app.py   485        1634.064     47         76801                                                 Constants.ITEM_STATUS_STOP,
+/home/isucon/isucari/webapp/python/app.py   486        8419.957     47        395738                                                 datetime.datetime.fromtimestamp(created_at),
+/home/isucon/isucari/webapp/python/app.py   487        3021.511     47        142011                                                 datetime.datetime.fromtimestamp(created_at),
+/home/isucon/isucari/webapp/python/app.py   488         1219.17     47         57301                                                 item_id,
+/home/isucon/isucari/webapp/python/app.py   489       7428329.0     46     341703134                                                 Constants.TRANSACTIONS_PER_PAGE + 1,
+/home/isucon/isucari/webapp/python/app.py   490               0      0             0                                             ))
+/home/isucon/isucari/webapp/python/app.py   491               0      0             0
+/home/isucon/isucari/webapp/python/app.py   492               0      0             0                                         else:
+/home/isucon/isucari/webapp/python/app.py   493        9566.043     46        440038                                             sql = _select_from_items_and_users("seller_id") + " WHERE (`items`.`seller_id` = %s OR `items`.`buyer_id` = %s ) AND `items`.`status` IN (%s,%s,%s,%s,%s) ORDER BY `items`.`created_at` DESC, `items`.`id` DESC LIMIT %s"
+/home/isucon/isucari/webapp/python/app.py   494         1296.87     46         59656              ecute(sql, [
+/home/isucon/isucari/webapp/python/app.py   495          1471.5     46         67689              user['id'],
+/home/isucon/isucari/webapp/python/app.py   496        1138.022     46         52349              user['id'],
+/home/isucon/isucari/webapp/python/app.py   497        1757.043     46         80824              Constants.ITEM_STATUS_ON_SALE,
+/home/isucon/isucari/webapp/python/app.py   498        1916.826     46         88174              Constants.ITEM_STATUS_TRADING,
+/home/isucon/isucari/webapp/python/app.py   499        1410.283     46         64873              Constants.ITEM_STATUS_SOLD_OUT,
+/home/isucon/isucari/webapp/python/app.py   500        1951.696     46         89778              Constants.ITEM_STATUS_CANCEL,
+/home/isucon/isucari/webapp/python/app.py   501        1362.457     46         62673              Constants.ITEM_STATUS_STOP,
+/home/isucon/isucari/webapp/python/app.py   502     2506917.957     46     115318226              Constants.TRANSACTIONS_PER_PAGE + 1,
+/home/isucon/isucari/webapp/python/app.py   503               0      0             0
+/home/isucon/isucari/webapp/python/app.py   504               0      0             0
+/home/isucon/isucari/webapp/python/app.py   505        1413.522     92        130044              ails = []
+/home/isucon/isucari/webapp/python/app.py   506        1208.967     92        111225              ue:
+/home/isucon/isucari/webapp/python/app.py   507       13796.986   1066      14707587               = c.fetchone()
+/home/isucon/isucari/webapp/python/app.py   508               0      0             0
+/home/isucon/isucari/webapp/python/app.py   509        1264.063   1066       1347491              tem is None:
+/home/isucon/isucari/webapp/python/app.py   510       38156.961    102       3892010              break
+/home/isucon/isucari/webapp/python/app.py   511               0      0             0
+/home/isucon/isucari/webapp/python/app.py   512               0      0             0              ller = get_user_simple_by_id(item["seller_id"])
+/home/isucon/isucari/webapp/python/app.py   513       19774.482    964      19062601              gory = get_category_by_id(item["category_id"])
+/home/isucon/isucari/webapp/python/app.py   514               0      0             0
+/home/isucon/isucari/webapp/python/app.py   515        1554.618    964       1498652              ["category"] = category
+/home/isucon/isucari/webapp/python/app.py   516       16155.384    964      15573790              ["seller"] = to_user_json(item, prefix="seller_id")
+/home/isucon/isucari/webapp/python/app.py   517       20418.929    964      19683848              ["image_url"] = get_image_url(item["image_name"])
+/home/isucon/isucari/webapp/python/app.py   518      135136.579    964     130271662              item = to_item_json(item, simple=False)
+/home/isucon/isucari/webapp/python/app.py   519               0      0             0
+/home/isucon/isucari/webapp/python/app.py   520        1910.527    964       1841748              item_details.append(item)
+/home/isucon/isucari/webapp/python/app.py   521               0      0             0
+/home/isucon/isucari/webapp/python/app.py   522       41128.956    964      39648314              with conn.cursor() as c2:
+/home/isucon/isucari/webapp/python/app.py   523        1252.558    964       1207466                  sql = "SELECT * FROM `transaction_evidences` WHERE `item_id` = %s"
+/home/isucon/isucari/webapp/python/app.py   524     2016824.584    958    1932117951                  c2.execute(sql, [item['id']])
+/home/isucon/isucari/webapp/python/app.py   525       12815.231    962      12328252                  transaction_evidence = c2.fetchone()
+/home/isucon/isucari/webapp/python/app.py   526               0      0             0
+/home/isucon/isucari/webapp/python/app.py   527               0      0             0
+/home/isucon/isucari/webapp/python/app.py   528       30024.597    962      28883662                  if transaction_evidence:
+/home/isucon/isucari/webapp/python/app.py   529         1182.73    374        442341                      sql = "SELECT * FROM `shippings` WHERE `transaction_evidence_id` = %s"
+/home/isucon/isucari/webapp/python/app.py   530     1711667.981    372     636740489                      c2.execute(sql, [transaction_evidence["id"]])
+/home/isucon/isucari/webapp/python/app.py   531       16048.679    380       6098498                      shipping = c2.fetchone()
+/home/isucon/isucari/webapp/python/app.py   532        1343.871    380        510671                      if not shipping:
+/home/isucon/isucari/webapp/python/app.py   533               0      0             0                          http_json_error(requests.codes['not_found'], "shipping not found")
+/home/isucon/isucari/webapp/python/app.py   534               0      0             0
+/home/isucon/isucari/webapp/python/app.py   535   554281470.527    353  195661359096  !*********          ssr = api_shipment_status(get_shipment_service_url(), {"reserve_id": shipping["reserve_id"]})
+/home/isucon/isucari/webapp/python/app.py   536        2427.266    379        919934                      item["transaction_evidence_id"] = transaction_evidence["id"]
+/home/isucon/isucari/webapp/python/app.py   537        1673.737    380        636020                      item["transaction_evidence_status"] = transaction_evidence["status"]
+/home/isucon/isucari/webapp/python/app.py   538      225682.513    380      85759355                      item["shipping_status"] = ssr["status"]
+/home/isucon/isucari/webapp/python/app.py   539               0      0             0
+/home/isucon/isucari/webapp/python/app.py   540       48338.667      3        145016              ySQLdb.Error as err:
+/home/isucon/isucari/webapp/python/app.py   541               0      0             0              logger.exception(err)
+/home/isucon/isucari/webapp/python/app.py   542               0      0             0              _json_error(requests.codes['internal_server_error'], "db error")
+/home/isucon/isucari/webapp/python/app.py   543               0      0             0
+/home/isucon/isucari/webapp/python/app.py   544        1214.913    103        125136              alse
+/home/isucon/isucari/webapp/python/app.py   545        2735.709    103        281778              details) > Constants.TRANSACTIONS_PER_PAGE:
+/home/isucon/isucari/webapp/python/app.py   546        1164.088     80         93127               = True
+/home/isucon/isucari/webapp/python/app.py   547        3215.325     80        257226              ails = item_details[:Constants.TRANSACTIONS_PER_PAGE]
+/home/isucon/isucari/webapp/python/app.py   548               0      0             0
+/home/isucon/isucari/webapp/python/app.py   549        2425.941    102        247446              .jsonify(dict(
+/home/isucon/isucari/webapp/python/app.py   550        1117.804    102        114016              em_details,
+/home/isucon/isucari/webapp/python/app.py   551     6324412.039    102     645090028              =has_next,
+/home/isucon/isucari/webapp/python/app.py   552               0      0             0
+/home/isucon/isucari/webapp/python/app.py   555               0      0             0              @app.route("/users/<user_id>.json", methods=["GET"])
+/home/isucon/isucari/webapp/python/app.py   556               0      0             0              def get_user_items(user_id=None):
+/home/isucon/isucari/webapp/python/app.py   557    14409783.381     21     302605451                  user = get_user_simple_by_id(user_id)
+/home/isucon/isucari/webapp/python/app.py   558       58992.969     32       1887775                  conn = dbh()
+/home/isucon/isucari/webapp/python/app.py   559               0      0             0
+/home/isucon/isucari/webapp/python/app.py   560         903.563     32         28914                  item_id = 0
+/home/isucon/isucari/webapp/python/app.py   561         827.781     32         26489                  created_at = 0
+/home/isucon/isucari/webapp/python/app.py   562               0      0             0
+/home/isucon/isucari/webapp/python/app.py   563       272193.25     32       8710184                  item_id_str = flask.request.args.get('item_id')
+/home/isucon/isucari/webapp/python/app.py   564         975.938     32         31230                  if item_id_str:
+/home/isucon/isucari/webapp/python/app.py   565        3497.706     17         59461                      if not item_id_str.isdecimal() or int(item_id_str) < 0:
+/home/isucon/isucari/webapp/python/app.py   566               0      0             0                          http_json_error(requests.codes['bad_request'], "item_id param error")
+/home/isucon/isucari/webapp/python/app.py   567        1375.471     17         23383                      item_id = int(item_id_str)
+/home/isucon/isucari/webapp/python/app.py   568               0      0             0
+/home/isucon/isucari/webapp/python/app.py   569       50862.063     32       1627586                  created_at_str = flask.request.args.get('created_at')
+/home/isucon/isucari/webapp/python/app.py   570           895.0     32         28640                  if created_at_str:
+/home/isucon/isucari/webapp/python/app.py   571        1992.412     17         33871                      if not created_at_str.isdecimal() or int(created_at_str) < 0:
+/home/isucon/isucari/webapp/python/app.py   572               0      0             0                          http_json_error(requests.codes['bad_request'], "created_at param error")
+/home/isucon/isucari/webapp/python/app.py   573        1187.824     17         20193                      created_at = int(created_at_str)
+/home/isucon/isucari/webapp/python/app.py   574               0      0             0
+/home/isucon/isucari/webapp/python/app.py   575       28042.719     32        897367                  with conn.cursor() as c:
+/home/isucon/isucari/webapp/python/app.py   576         873.437     32         27950                      try:
+/home/isucon/isucari/webapp/python/app.py   577        1052.187     32         33670                          if item_id > 0 and created_at > 0:
+/home/isucon/isucari/webapp/python/app.py   578          9409.0     17        159953                              sql = _select_from_items_and_users("seller_id") + " WHERE `items`.`seller_id` = %s AND `items`.`status` IN (%s,%s,%s) AND (`items`.`created_at` < %s OR (`items`.`created_at` <= %s AND `items`.`id` < %s)) ORDER BY `items`.`created_at` DESC, `items`.`id` DESC LIMIT %s"
+/home/isucon/isucari/webapp/python/app.py   579          2125.0     17         36125                              c.execute(sql, (
+/home/isucon/isucari/webapp/python/app.py   580        1071.765     17         18220                                  user['id'],
+/home/isucon/isucari/webapp/python/app.py   581        2043.941     17         34747                                  Constants.ITEM_STATUS_ON_SALE,
+/home/isucon/isucari/webapp/python/app.py   582        1523.529     17         25900                                  Constants.ITEM_STATUS_TRADING,
+/home/isucon/isucari/webapp/python/app.py   583        1109.706     17         18865                                  Constants.ITEM_STATUS_SOLD_OUT,
+/home/isucon/isucari/webapp/python/app.py   584        7980.588     17        135670                                  datetime.datetime.fromtimestamp(created_at),
+/home/isucon/isucari/webapp/python/app.py   585        2262.882     17         38469                                  datetime.datetime.fromtimestamp(created_at),
+/home/isucon/isucari/webapp/python/app.py   586         843.176     17         14334                                  item_id,
+/home/isucon/isucari/webapp/python/app.py   587   156195541.765     17    2655324210                                  Constants.ITEMS_PER_PAGE + 1,
+/home/isucon/isucari/webapp/python/app.py   588               0      0             0                              ))
+/home/isucon/isucari/webapp/python/app.py   589               0      0             0
+/home/isucon/isucari/webapp/python/app.py   590               0      0             0                          else:
+/home/isucon/isucari/webapp/python/app.py   591        9448.062     16        151169                              sql = _select_from_items_and_users("seller_id") + " WHERE `items`.`seller_id` = %s AND `items`.`status` IN (%s,%s,%s) ORDER BY `items`.`created_at` DESC, `items`.`id` DESC LIMIT %s"
+/home/isucon/isucari/webapp/python/app.py   592         1120.75     16         17932                              c.execute(sql, (
+/home/isucon/isucari/webapp/python/app.py   593        1310.187     16         20963                                  user['id'],
+/home/isucon/isucari/webapp/python/app.py   594        1660.937     16         26575                                  Constants.ITEM_STATUS_ON_SALE,
+/home/isucon/isucari/webapp/python/app.py   595        1744.187     16         27907                                  Constants.ITEM_STATUS_TRADING,
+/home/isucon/isucari/webapp/python/app.py   596        1186.937     16         18991                                  Constants.ITEM_STATUS_SOLD_OUT,
+/home/isucon/isucari/webapp/python/app.py   597     126089583.5     16    2017433336                                  Constants.ITEMS_PER_PAGE + 1,
+/home/isucon/isucari/webapp/python/app.py   598               0      0             0                              ))
+/home/isucon/isucari/webapp/python/app.py   599               0      0             0
+/home/isucon/isucari/webapp/python/app.py   600        1256.556     54         67854                          item_simples = []
+/home/isucon/isucari/webapp/python/app.py   601        1022.648     54         55223                          while True:
+/home/isucon/isucari/webapp/python/app.py   602       27635.219   2241      61930526                              item = c.fetchone()
+/home/isucon/isucari/webapp/python/app.py   603               0      0             0
+/home/isucon/isucari/webapp/python/app.py   604         991.884   2241       2222811                              if item is None:
+/home/isucon/isucari/webapp/python/app.py   605       72205.415     53       3826887                                  break
+/home/isucon/isucari/webapp/python/app.py   606               0      0             0
+/home/isucon/isucari/webapp/python/app.py   607               0      0             0                              # seller = get_user_simple_by_id(item["seller_id"])
+/home/isucon/isucari/webapp/python/app.py   608       71761.881   2188     157014996                              category = get_category_by_id(item["category_id"])
+/home/isucon/isucari/webapp/python/app.py   609               0      0             0
+/home/isucon/isucari/webapp/python/app.py   610        6153.295   2188      13463410                              item["category"] = category
+/home/isucon/isucari/webapp/python/app.py   611       22027.888   2188      48197020                              item["seller"] = to_user_json(item, prefix="seller_id")
+/home/isucon/isucari/webapp/python/app.py   612        3681.637   2188       8055421                              item["image_url"] = get_image_url(item["image_name"])
+/home/isucon/isucari/webapp/python/app.py   613      112538.825   2187     246122411                              item = to_item_json(item, simple=True)
+/home/isucon/isucari/webapp/python/app.py   614         1238.85   2187       2709364                              item_simples.append(item)
+/home/isucon/isucari/webapp/python/app.py   615               0      0             0
+/home/isucon/isucari/webapp/python/app.py   616               0      0             0                      except MySQLdb.Error as err:
+/home/isucon/isucari/webapp/python/app.py   617               0      0             0                          app.logger.exception(err)
+/home/isucon/isucari/webapp/python/app.py   618               0      0             0                          http_json_error(requests.codes['internal_server_error'], "db error")
+/home/isucon/isucari/webapp/python/app.py   619               0      0             0
+/home/isucon/isucari/webapp/python/app.py   620        1161.642     53         61567                  has_next = False
+/home/isucon/isucari/webapp/python/app.py   621        2340.642     53        124054                  if len(item_simples) > Constants.ITEMS_PER_PAGE:
+/home/isucon/isucari/webapp/python/app.py   622        1031.024     41         42272                      has_next = True
+/home/isucon/isucari/webapp/python/app.py   623        3219.049     41        131981                      item_simples = item_simples[:Constants.ITEMS_PER_PAGE]
+/home/isucon/isucari/webapp/python/app.py   624               0      0             0
+/home/isucon/isucari/webapp/python/app.py   625        2156.811     53        114311                  return flask.jsonify(dict(
+/home/isucon/isucari/webapp/python/app.py   626        8894.019     53        471383                      user=to_user_json(user),
+/home/isucon/isucari/webapp/python/app.py   627         935.547     53         49584                      items=item_simples,
+/home/isucon/isucari/webapp/python/app.py   628    45642417.435     46    2099551202                      has_next=has_next,
+/home/isucon/isucari/webapp/python/app.py   629               0      0             0                  ))
+/home/isucon/isucari/webapp/python/app.py   632               0      0             0              @app.route("/items/<item_id>.json", methods=["GET"])
+/home/isucon/isucari/webapp/python/app.py   633               0      0             0              def get_item(item_id=None):
+/home/isucon/isucari/webapp/python/app.py   634    16655792.547     95    1582300292                   user = get_user()
+/home/isucon/isucari/webapp/python/app.py   635       51318.661    118       6055602                  conn = dbh()
+/home/isucon/isucari/webapp/python/app.py   636               0      0             0
+/home/isucon/isucari/webapp/python/app.py   637       24996.449    118       2949581                  with conn.cursor() as c:
+/home/isucon/isucari/webapp/python/app.py   638         704.153    118         83090                      try:
+/home/isucon/isucari/webapp/python/app.py   639        7287.932    118        859976                          sql = _select_from_items_and_users("seller_id") + " WHERE `items`.`id` = %s"
+/home/isucon/isucari/webapp/python/app.py   640     4521161.291    117     528975871                          c.execute(sql, (item_id,))
+/home/isucon/isucari/webapp/python/app.py   641       11223.293    123       1380465                          item = c.fetchone()
+/home/isucon/isucari/webapp/python/app.py   642         773.565    124         95922                          if item is None:
+/home/isucon/isucari/webapp/python/app.py   643               0      0             0                              http_json_error(requests.codes['not_found'], "item not found")
+/home/isucon/isucari/webapp/python/app.py   644               0      0             0
+/home/isucon/isucari/webapp/python/app.py   645               0      0             0                          # seller = get_user_simple_by_id(item["seller_id"])
+/home/isucon/isucari/webapp/python/app.py   646        2397.242    124        297258                          category = get_category_by_id(item["category_id"])
+/home/isucon/isucari/webapp/python/app.py   647               0      0             0
+/home/isucon/isucari/webapp/python/app.py   648        1024.806    124        127076                          item["category"] = category
+/home/isucon/isucari/webapp/python/app.py   649       12036.992    124       1492587                          item["seller"] = to_user_json(item, prefix="seller_id")
+/home/isucon/isucari/webapp/python/app.py   650        6055.677    124        750904                          item["image_url"] = get_image_url(item["image_name"])
+/home/isucon/isucari/webapp/python/app.py   651        52160.75    124       6467933                          item = to_item_json(item, simple=False)
+/home/isucon/isucari/webapp/python/app.py   652               0      0             0
+/home/isucon/isucari/webapp/python/app.py   653         1554.21    124        192722                          if (user["id"] == item["seller_id"] or user["id"] == item["buyer_id"]) and item["buyer_id"]:
+/home/isucon/isucari/webapp/python/app.py   654     1335638.897     29      38733528                              buyer = get_user_simple_by_id(item["buyer_id"])
+/home/isucon/isucari/webapp/python/app.py   655               0      0             0
+/home/isucon/isucari/webapp/python/app.py   656        7858.543     35        275049                              item["buyer"] = to_user_json(buyer)
+/home/isucon/isucari/webapp/python/app.py   657        1100.343     35         38512                              item["buyer_id"] = buyer["id"]
+/home/isucon/isucari/webapp/python/app.py   658               0      0             0
+/home/isucon/isucari/webapp/python/app.py   659           808.0     35         28280                              sql = "SELECT * FROM `transaction_evidences` WHERE `item_id` = %s"
+/home/isucon/isucari/webapp/python/app.py   660     1934159.314     35      67695576                              c.execute(sql, (item['id'],))
+/home/isucon/isucari/webapp/python/app.py   661       10827.684     38        411452                              transaction_evidence = c.fetchone()
+/home/isucon/isucari/webapp/python/app.py   662               0      0             0                              # if not transaction_evidence:
+/home/isucon/isucari/webapp/python/app.py   663               0      0             0                              #     http_json_error(requests.codes['not_found'], "transaction_evidence not found")
+/home/isucon/isucari/webapp/python/app.py   664               0      0             0
+/home/isucon/isucari/webapp/python/app.py   665               0      0             0
+/home/isucon/isucari/webapp/python/app.py   666         761.947     38         28954                              sql = "SELECT * FROM `shippings` WHERE `transaction_evidence_id` = %s"
+/home/isucon/isucari/webapp/python/app.py   667     1234737.974     38      46920043                              c.execute(sql, (transaction_evidence["id"],))
+/home/isucon/isucari/webapp/python/app.py   668       11091.316     38        421470                              shipping = c.fetchone()
+/home/isucon/isucari/webapp/python/app.py   669         823.289     38         31285                              if not shipping:
+/home/isucon/isucari/webapp/python/app.py   670               0      0             0                                  http_json_error(requests.codes['not_found'], "shipping not found")
+/home/isucon/isucari/webapp/python/app.py   671               0      0             0
+/home/isucon/isucari/webapp/python/app.py   672    216999837.71     31    6726994969                              ssr = api_shipment_status(get_shipment_service_url(), {"reserve_id": shipping["reserve_id"]})
+/home/isucon/isucari/webapp/python/app.py   673        1714.207     58         99424                              item["transaction_evidence_id"] = transaction_evidence["id"]
+/home/isucon/isucari/webapp/python/app.py   674        1033.534     58         59945                              item["transaction_evidence_status"] = transaction_evidence["status"]
+/home/isucon/isucari/webapp/python/app.py   675       60110.103     58       3486386                              item["shipping_status"] = ssr["status"]
+/home/isucon/isucari/webapp/python/app.py   676               0      0             0                          else:
+/home/isucon/isucari/webapp/python/app.py   677         937.617     94         88136                              item["buyer"] = {}
+/home/isucon/isucari/webapp/python/app.py   678       48632.989     94       4571501                              item["buyer_id"] = 0
+/home/isucon/isucari/webapp/python/app.py   679               0      0             0
+/home/isucon/isucari/webapp/python/app.py   680               0      0             0                      except MySQLdb.Error as err:
+/home/isucon/isucari/webapp/python/app.py   681               0      0             0                          app.logger.exception(err)
+/home/isucon/isucari/webapp/python/app.py   682               0      0             0                          http_json_error(requests.codes['internal_server_error'], "db error")
+/home/isucon/isucari/webapp/python/app.py   683               0      0             0
+/home/isucon/isucari/webapp/python/app.py   684     1768464.783    152     268806647                   return flask.jsonify(item)
+/home/isucon/isucari/webapp/python/app.py   687               0      0             0              @app.route("/items/edit", methods=["POST"])
+/home/isucon/isucari/webapp/python/app.py   688               0      0             0              def post_item_edit():
+/home/isucon/isucari/webapp/python/app.py   689        330582.0      2        661164                  ensure_valid_csrf_token()
+/home/isucon/isucari/webapp/python/app.py   690         45682.0      2         91364                  ensure_required_payload(['item_price', 'item_id'])
+/home/isucon/isucari/webapp/python/app.py   691               0      0             0
+/home/isucon/isucari/webapp/python/app.py   692         18691.5      2         37383                  price = int(flask.request.json['item_price'])
+/home/isucon/isucari/webapp/python/app.py   693         17899.5      2         35799                  item_id = int(flask.request.json['item_id'])
+/home/isucon/isucari/webapp/python/app.py   694           941.5      2          1883                  if not 100 <= price <= 1000000:
+/home/isucon/isucari/webapp/python/app.py   695               0      0             0                      http_json_error(requests.codes['bad_request'], "商品価格は100ｲｽｺｲﾝ以上、1,000,000ｲｽｺｲﾝ以下にしてください")
+/home/isucon/isucari/webapp/python/app.py   696       6888235.0      2      13776470                    user = get_user()
+/home/isucon/isucari/webapp/python/app.py   697         47385.0      2         94770                  conn = dbh()
+/home/isucon/isucari/webapp/python/app.py   698         21315.0      2         42630                  with conn.cursor() as c:
+/home/isucon/isucari/webapp/python/app.py   699           635.0      2          1270                      try:
+/home/isucon/isucari/webapp/python/app.py   700           591.5      2          1183                          sql = "SELECT * FROM `items` WHERE `id` = %s"
+/home/isucon/isucari/webapp/python/app.py   701       3005972.0      2       6011944                          c.execute(sql, (item_id,))
+/home/isucon/isucari/webapp/python/app.py   702          9050.5      2         18101                          item = c.fetchone()
+/home/isucon/isucari/webapp/python/app.py   703           666.5      2          1333                          if item is None:
+/home/isucon/isucari/webapp/python/app.py   704               0      0             0                              http_json_error(requests.codes['not_found'], "item not found")
+/home/isucon/isucari/webapp/python/app.py   705         57054.0      2        114108                          if item["seller_id"] != user["id"]:
+/home/isucon/isucari/webapp/python/app.py   706               0      0             0                              http_json_error(requests.codes['forbidden'], "自分の商品以外は編集できません")
+/home/isucon/isucari/webapp/python/app.py   707               0      0             0                      except MySQLdb.Error as err:
+/home/isucon/isucari/webapp/python/app.py   708               0      0             0                          app.logger.exception(err)
+/home/isucon/isucari/webapp/python/app.py   709               0      0             0                          http_json_error(requests.codes['internal_server_error'], "db error")
+/home/isucon/isucari/webapp/python/app.py   710               0      0             0
+/home/isucon/isucari/webapp/python/app.py   711       6564104.0      1       6564104                  conn.begin()
+/home/isucon/isucari/webapp/python/app.py   712         28472.0      1         28472                  with conn.cursor() as c:
+/home/isucon/isucari/webapp/python/app.py   713           708.0      1           708                      try:
+/home/isucon/isucari/webapp/python/app.py   714           635.0      1           635                          sql = "SELECT * FROM `items` WHERE `id` = %s FOR UPDATE"
+/home/isucon/isucari/webapp/python/app.py   715               0      0             0                          c.execute(sql, (flask.request.json["item_id"],))
+/home/isucon/isucari/webapp/python/app.py   716         12279.0      4         49116                          item = c.fetchone()
+/home/isucon/isucari/webapp/python/app.py   717          1809.0      4          7236                          if item["status"] != Constants.ITEM_STATUS_ON_SALE:
+/home/isucon/isucari/webapp/python/app.py   718        157441.0      2        314882                              conn.rollback()
+/home/isucon/isucari/webapp/python/app.py   719         22831.0      2         45662                              http_json_error(requests.codes['forbidden'], "販売中の商品以外編集できません")
+/home/isucon/isucari/webapp/python/app.py   720           660.0      2          1320                          sql = "UPDATE `items` SET `price` = %s, `updated_at` = %s WHERE `id` = %s"
+/home/isucon/isucari/webapp/python/app.py   721           784.0      2          1568                          c.execute(sql, (
+/home/isucon/isucari/webapp/python/app.py   722         31367.0      2         62734                              flask.request.json["item_price"],
+/home/isucon/isucari/webapp/python/app.py   723          6167.0      2         12334                              datetime.datetime.now(),
+/home/isucon/isucari/webapp/python/app.py   724       5169224.0      2      10338448                              flask.request.json["item_id"]
+/home/isucon/isucari/webapp/python/app.py   725               0      0             0                          ))
+/home/isucon/isucari/webapp/python/app.py   726               0      0             0
+/home/isucon/isucari/webapp/python/app.py   727          1092.0      2          2184                          sql = "SELECT * FROM `items` WHERE `id` = %s"
+/home/isucon/isucari/webapp/python/app.py   728       2546151.0      2       5092302                          c.execute(sql, (flask.request.json["item_id"],))
+/home/isucon/isucari/webapp/python/app.py   729          9498.0      2         18996                          item = c.fetchone()
+/home/isucon/isucari/webapp/python/app.py   730       2213889.0      2       4427778                          conn.commit()
+/home/isucon/isucari/webapp/python/app.py   731         48410.0      2         96820                      except MySQLdb.Error as err:
+/home/isucon/isucari/webapp/python/app.py   732               0      0             0                          conn.rollback()
+/home/isucon/isucari/webapp/python/app.py   733               0      0             0                          app.logger.exception(err)
+/home/isucon/isucari/webapp/python/app.py   734               0      0             0                          http_json_error(requests.codes['internal_server_error'], "db error")
+/home/isucon/isucari/webapp/python/app.py   735          1775.0      2          3550                  return flask.jsonify(dict(
+/home/isucon/isucari/webapp/python/app.py   736          1107.0      2          2214                      item_id=item["id"],
+/home/isucon/isucari/webapp/python/app.py   737           733.0      2          1466                      item_price=item["price"],
+/home/isucon/isucari/webapp/python/app.py   738          6836.0      2         13672                      item_created_at=int(item["created_at"].timestamp()),
+/home/isucon/isucari/webapp/python/app.py   739        649805.0      2       1299610                      item_updated_at=int(item["updated_at"].timestamp()),
+/home/isucon/isucari/webapp/python/app.py   740               0      0             0                  ))
+/home/isucon/isucari/webapp/python/app.py   743               0      0             0              @app.route("/buy", methods=["POST"])
+/home/isucon/isucari/webapp/python/app.py   744               0      0             0              def post_buy():
+/home/isucon/isucari/webapp/python/app.py   745     2293662.789     38      87159186                  ensure_valid_csrf_token()
+/home/isucon/isucari/webapp/python/app.py   746    10124449.853     34     344231295                   buyer = get_user()
+/home/isucon/isucari/webapp/python/app.py   747               0      0             0
+/home/isucon/isucari/webapp/python/app.py   748       59651.361     36       2147449                  conn = dbh()
+/home/isucon/isucari/webapp/python/app.py   749        1188.528     36         42787                  try:
+/home/isucon/isucari/webapp/python/app.py   750     1529547.444     36      55063708                       conn.begin()
+/home/isucon/isucari/webapp/python/app.py   751       31698.028     36       1141129                      with conn.cursor() as c:
+/home/isucon/isucari/webapp/python/app.py   752        1164.639     36         41927                          sql = "SELECT * FROM `items` WHERE `id` = %s FOR UPDATE"
+/home/isucon/isucari/webapp/python/app.py   753  1186486289.972     36   42713506439  **                       c.execute(sql, (flask.request.json['item_id'],))
+/home/isucon/isucari/webapp/python/app.py   754       17652.667     36        635496                          target_item = c.fetchone()
+/home/isucon/isucari/webapp/python/app.py   755        1347.944     36         48526                          if target_item is None:
+/home/isucon/isucari/webapp/python/app.py   756               0      0             0                              conn.rollback()
+/home/isucon/isucari/webapp/python/app.py   757               0      0             0                              http_json_error(requests.codes['not_found'], "item not found")
+/home/isucon/isucari/webapp/python/app.py   758        3131.528     36        112735                          if target_item['status'] != Constants.ITEM_STATUS_ON_SALE:
+/home/isucon/isucari/webapp/python/app.py   759     1056047.318     22      23233041                              conn.rollback()
+/home/isucon/isucari/webapp/python/app.py   760      102609.455     22       2257408                              http_json_error(requests.codes['forbidden'], "item is not for sale")
+/home/isucon/isucari/webapp/python/app.py   761        1559.643     14         21835                          if target_item['seller_id'] == buyer['id']:
+/home/isucon/isucari/webapp/python/app.py   762       1336431.0      1       1336431                              conn.rollback()
+/home/isucon/isucari/webapp/python/app.py   763        111530.0      1        111530                              http_json_error(requests.codes['forbidden'], "自分の商品は買えません")
+/home/isucon/isucari/webapp/python/app.py   764        1185.692     13         15414                          sql = "SELECT * FROM `users` WHERE `id` = %s"
+/home/isucon/isucari/webapp/python/app.py   765     1908928.308     13      24816068                           c.execute(sql, (target_item['seller_id'],))
+/home/isucon/isucari/webapp/python/app.py   766       13637.231     13        177284                          seller = c.fetchone()
+/home/isucon/isucari/webapp/python/app.py   767        1241.615     13         16141                          if seller is None:
+/home/isucon/isucari/webapp/python/app.py   768               0      0             0                              conn.rollback()
+/home/isucon/isucari/webapp/python/app.py   769               0      0             0                              http_json_error(requests.codes['not_found'], "seller not found")
+/home/isucon/isucari/webapp/python/app.py   770        4620.154     13         60062                          category = get_category_by_id(target_item['category_id'])
+/home/isucon/isucari/webapp/python/app.py   771        9820.385     13        127665                          if category is None:
+/home/isucon/isucari/webapp/python/app.py   772               0      0             0                              conn.rollback()
+/home/isucon/isucari/webapp/python/app.py   773               0      0             0                              http_json_error(requests.codes['forbidden'], "権限がありません")
+/home/isucon/isucari/webapp/python/app.py   774               0      0             0
+/home/isucon/isucari/webapp/python/app.py   775               0      0             0                          # TODO: check category error
+/home/isucon/isucari/webapp/python/app.py   776        1173.538     13         15256                          sql = "INSERT INTO `transaction_evidences` (`seller_id`, `buyer_id`, `status`, `item_id`, `item_name`, " \
+/home/isucon/isucari/webapp/python/app.py   777               0      0             0                                "`item_price`, `item_description`, `item_category_id`, `item_root_category_id`) " \
+/home/isucon/isucari/webapp/python/app.py   778               0      0             0                                "VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)"
+/home/isucon/isucari/webapp/python/app.py   779        1323.154     13         17201                          c.execute(sql, (
+/home/isucon/isucari/webapp/python/app.py   780        1322.692     13         17195                              target_item['seller_id'],
+/home/isucon/isucari/webapp/python/app.py   781        1323.692     13         17208                              buyer['id'],
+/home/isucon/isucari/webapp/python/app.py   782       14012.462     13        182162                              Constants.TRANSACTION_EVIDENCE_STATUS_WAIT_SHIPPING,
+/home/isucon/isucari/webapp/python/app.py   783        1286.077     13         16719                              target_item['id'],
+/home/isucon/isucari/webapp/python/app.py   784        1289.769     13         16767                              target_item['name'],
+/home/isucon/isucari/webapp/python/app.py   785        1221.077     13         15874                              target_item['price'],
+/home/isucon/isucari/webapp/python/app.py   786        1950.462     13         25356                              target_item['description'],
+/home/isucon/isucari/webapp/python/app.py   787        1399.769     13         18197                              category['id'],
+/home/isucon/isucari/webapp/python/app.py   788     1355697.077     13      17624062                               category['parent_id'],
+/home/isucon/isucari/webapp/python/app.py   789               0      0             0                          ))
+/home/isucon/isucari/webapp/python/app.py   790        1300.615     13         16908                          transaction_evidence_id = c.lastrowid
+/home/isucon/isucari/webapp/python/app.py   791        1195.846     13         15546                          sql = "UPDATE `items` SET `buyer_id` = %s, `status` = %s, `updated_at` = %s WHERE `id` = %s"
+/home/isucon/isucari/webapp/python/app.py   792          1413.0     13         18369                          c.execute(sql, (
+/home/isucon/isucari/webapp/python/app.py   793        1764.231     13         22935                              buyer['id'],
+/home/isucon/isucari/webapp/python/app.py   794        2683.154     13         34881                              Constants.ITEM_STATUS_TRADING,
+/home/isucon/isucari/webapp/python/app.py   795          8395.0     13        109135                              datetime.datetime.now(),
+/home/isucon/isucari/webapp/python/app.py   796     3303605.692     13      42946874                              target_item['id'],
+/home/isucon/isucari/webapp/python/app.py   797               0      0             0                          ))
+/home/isucon/isucari/webapp/python/app.py   798               0      0             0
+/home/isucon/isucari/webapp/python/app.py   799     2381534.231     13      30959945                            host = get_shipment_service_url()
+/home/isucon/isucari/webapp/python/app.py   800        1400.462     13         18206                          try:
+/home/isucon/isucari/webapp/python/app.py   801          3129.0     13         40677                              res = requests.post(host + "/create",
+/home/isucon/isucari/webapp/python/app.py   802        3629.462     13         47183                                                  headers=dict(Authorization=Constants.ISUCARI_API_TOKEN),
+/home/isucon/isucari/webapp/python/app.py   803        1294.308     13         16826                                                  json=dict(
+/home/isucon/isucari/webapp/python/app.py   804        1515.769     13         19705                                                      to_address=buyer['address'],
+/home/isucon/isucari/webapp/python/app.py   805          1396.0     13         18148                                                      to_name=buyer['account_name'],
+/home/isucon/isucari/webapp/python/app.py   806        1544.769     13         20082                                                      from_address=seller['address'],
+/home/isucon/isucari/webapp/python/app.py   807     571819243.9     10    5718192439                                                          from_name=seller['account_name'],
+/home/isucon/isucari/webapp/python/app.py   808               0      0             0                                                  ))
+/home/isucon/isucari/webapp/python/app.py   809       18861.316     19        358365                              res.raise_for_status()
+/home/isucon/isucari/webapp/python/app.py   810               0      0             0                          except (socket.gaierror, requests.HTTPError) as err:
+/home/isucon/isucari/webapp/python/app.py   811               0      0             0                              conn.rollback()
+/home/isucon/isucari/webapp/python/app.py   812               0      0             0                              app.logger.exception(err)
+/home/isucon/isucari/webapp/python/app.py   813               0      0             0                              http_json_error(requests.codes['internal_server_error'])
+/home/isucon/isucari/webapp/python/app.py   814               0      0             0
+/home/isucon/isucari/webapp/python/app.py   815       90912.053     19       1727329                          shipping_res = res.json()
+/home/isucon/isucari/webapp/python/app.py   816               0      0             0
+/home/isucon/isucari/webapp/python/app.py   817     2424883.684     19      46072790                          host = get_payment_service_url()
+/home/isucon/isucari/webapp/python/app.py   818        1103.737     19         20971                          try:
+/home/isucon/isucari/webapp/python/app.py   819        2605.895     19         49512                              res = requests.post(host + "/token",
+/home/isucon/isucari/webapp/python/app.py   820        1123.474     19         21346                                                  json=dict(
+/home/isucon/isucari/webapp/python/app.py   821        2225.158     19         42278                                                      shop_id=Constants.PAYMENT_SERVICE_ISUCARI_SHOP_ID,
+/home/isucon/isucari/webapp/python/app.py   822        1281.053     19         24340                                                      api_key=Constants.PAYMENT_SERVICE_ISUCARI_API_KEY,
+/home/isucon/isucari/webapp/python/app.py   823         41601.0     19        790419                                                      token=flask.request.json['token'],
+/home/isucon/isucari/webapp/python/app.py   824   349668960.824     17    5944372334                                                      price=target_item['price'],
+/home/isucon/isucari/webapp/python/app.py   825               0      0             0                                                  ))
+/home/isucon/isucari/webapp/python/app.py   826       16642.737     19        316212                              res.raise_for_status()
+/home/isucon/isucari/webapp/python/app.py   827               0      0             0                          except (socket.gaierror, requests.HTTPError) as err:
+/home/isucon/isucari/webapp/python/app.py   828               0      0             0                              conn.rollback()
+/home/isucon/isucari/webapp/python/app.py   829               0      0             0                              app.logger.exception(err)
+/home/isucon/isucari/webapp/python/app.py   830               0      0             0                              http_json_error(requests.codes['internal_server_error'])
+/home/isucon/isucari/webapp/python/app.py   831               0      0             0
+/home/isucon/isucari/webapp/python/app.py   832      135237.722     18       2434279                          payment_res = res.json()
+/home/isucon/isucari/webapp/python/app.py   833        1645.667     18         29622                          if payment_res['status'] == "invalid":
+/home/isucon/isucari/webapp/python/app.py   834               0      0             0                              conn.rollback()
+/home/isucon/isucari/webapp/python/app.py   835               0      0             0                              http_json_error(requests.codes["bad_request"], "カード情報に誤りがあります")
+/home/isucon/isucari/webapp/python/app.py   836        1285.944     18         23147                          if payment_res['status'] == "fail":
+/home/isucon/isucari/webapp/python/app.py   837     21473704.25      4      85894817                              conn.rollback()
+/home/isucon/isucari/webapp/python/app.py   838         98807.0      4        395228                              http_json_error(requests.codes["bad_request"], "カードの残高が足りません")
+/home/isucon/isucari/webapp/python/app.py   839        1153.429     14         16148                          if payment_res['status'] != "ok":
+/home/isucon/isucari/webapp/python/app.py   840               0      0             0                              conn.rollback()
+/home/isucon/isucari/webapp/python/app.py   841               0      0             0                              http_json_error(requests.codes["bad_request"], "想定外のエラー")
+/home/isucon/isucari/webapp/python/app.py   842               0      0             0
+/home/isucon/isucari/webapp/python/app.py   843        1058.071     14         14813                          sql = "INSERT INTO `shippings` (`transaction_evidence_id`, `status`, `item_name`, `item_id`, " \
+/home/isucon/isucari/webapp/python/app.py   844               0      0             0                                "`reserve_id`, `reserve_time`, `to_address`, `to_name`, `from_address`, `from_name`, `img_binary`) " \
+/home/isucon/isucari/webapp/python/app.py   845               0      0             0                                "VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s) "
+/home/isucon/isucari/webapp/python/app.py   846        1830.571     14         25628                          c.execute(sql, (
+/home/isucon/isucari/webapp/python/app.py   847        1038.643     14         14541                              transaction_evidence_id,
+/home/isucon/isucari/webapp/python/app.py   848        2587.857     14         36230                              Constants.SHIPPING_STATUS_INITIAL,
+/home/isucon/isucari/webapp/python/app.py   849        1469.571     14         20574                              target_item["name"],
+/home/isucon/isucari/webapp/python/app.py   850        1194.429     14         16722                              target_item["id"],
+/home/isucon/isucari/webapp/python/app.py   851          1356.0     14         18984                              shipping_res["reserve_id"],
+/home/isucon/isucari/webapp/python/app.py   852        1140.643     14         15969                              shipping_res["reserve_time"],
+/home/isucon/isucari/webapp/python/app.py   853        1505.714     14         21080                              buyer["address"],
+/home/isucon/isucari/webapp/python/app.py   854        1186.643     14         16613                              buyer["account_name"],
+/home/isucon/isucari/webapp/python/app.py   855        1398.857     14         19584
+/home/isucon/isucari/webapp/python/app.py   856        1152.143     14         16130              "],
+/home/isucon/isucari/webapp/python/app.py   857     3115062.429     14      43610874
+/home/isucon/isucari/webapp/python/app.py   858               0      0             0
+/home/isucon/isucari/webapp/python/app.py   859     8832326.643     14     123652573
+/home/isucon/isucari/webapp/python/app.py   860         3740.48     25         93512
+/home/isucon/isucari/webapp/python/app.py   861               0      0             0
+/home/isucon/isucari/webapp/python/app.py   862               0      0             0              es['internal_server_error'], "db error")
+/home/isucon/isucari/webapp/python/app.py   863     1218764.538     13      15843939              ction_evidence_id=transaction_evidence_id))
+/home/isucon/isucari/webapp/python/app.py   866               0      0             0              @app.route("/sell", methods=["POST"])
+/home/isucon/isucari/webapp/python/app.py   867               0      0             0              def post_sell():
+/home/isucon/isucari/webapp/python/app.py   868   427263585.238     42   17945070580  *               if flask.request.form['csrf_token'] != flask.session['csrf_token']:
+/home/isucon/isucari/webapp/python/app.py   869         27916.5      2         55833                      http_json_error(requests.codes['unprocessable_entity'], "csrf token error")
+/home/isucon/isucari/webapp/python/app.py   870        1369.418    225        308119                  for k in ["name", "description", "price", "category_id"]:
+/home/isucon/isucari/webapp/python/app.py   871      306342.094    180      55141577                      if k not in flask.request.form or len(flask.request.form[k]) == 0:
+/home/isucon/isucari/webapp/python/app.py   872               0      0             0                          http_json_error(requests.codes['bad_request'], 'all parameters are required')
+/home/isucon/isucari/webapp/python/app.py   873               0      0             0
+/home/isucon/isucari/webapp/python/app.py   874      354742.727     44      15608680                  price = int(flask.request.form['price'])
+/home/isucon/isucari/webapp/python/app.py   875        1599.511     45         71978                  if not 100 <= price <= 1000000:
+/home/isucon/isucari/webapp/python/app.py   876         27884.2      5        139421                      http_json_error(requests.codes['bad_request'], "商品価格は100ｲｽｺｲﾝ以上、1,000,000ｲｽｺｲﾝ以下にしてください")
+/home/isucon/isucari/webapp/python/app.py   877               0      0             0
+/home/isucon/isucari/webapp/python/app.py   878      772231.725     40      30889269                  category = get_category_by_id(flask.request.form['category_id'])
+/home/isucon/isucari/webapp/python/app.py   879      338300.475     40      13532019                  if category is None or category['parent_id'] == 0:
+/home/isucon/isucari/webapp/python/app.py   880               0      0             0                      http_json_error(requests.codes['bad_request'], 'Incorrect category ID')
+/home/isucon/isucari/webapp/python/app.py   881    20494709.846     39     799293684                  user = get_user()
+/home/isucon/isucari/webapp/python/app.py   882               0      0             0
+/home/isucon/isucari/webapp/python/app.py   883        51810.95     40       2072438                  if "image" not in flask.request.files:
+/home/isucon/isucari/webapp/python/app.py   884               0      0             0                      http_json_error(requests.codes['internal_server_error'], 'image error')
+/home/isucon/isucari/webapp/python/app.py   885               0      0             0
+/home/isucon/isucari/webapp/python/app.py   886       45785.825     40       1831433                  file = flask.request.files['image']
+/home/isucon/isucari/webapp/python/app.py   887       58325.325     40       2333013                  ext = os.path.splitext(file.filename)[1]
+/home/isucon/isucari/webapp/python/app.py   888          1572.7     40         62908                  if ext not in ('.jpg', 'jpeg', '.png', 'gif'):
+/home/isucon/isucari/webapp/python/app.py   889               0      0             0                      http_json_error(requests.codes['bad_request'], 'unsupported image format error error')
+/home/isucon/isucari/webapp/python/app.py   890          1294.0     40         51760                  if ext == ".jpeg":
+/home/isucon/isucari/webapp/python/app.py   891               0      0             0                      ext = ".jpg"
+/home/isucon/isucari/webapp/python/app.py   892      1432011.75     40      57280470                  imagename = "{0}{1}".format(random_string(32), ext)
+/home/isucon/isucari/webapp/python/app.py   893     3930559.225     40     157222369                  file.save(os.path.join(app.config['UPLOAD_FOLDER'], imagename))
+/home/isucon/isucari/webapp/python/app.py   894               0      0             0
+/home/isucon/isucari/webapp/python/app.py   895        1829.025     40         73161                  try:
+/home/isucon/isucari/webapp/python/app.py   896       71002.425     40       2840097                      conn = dbh()
+/home/isucon/isucari/webapp/python/app.py   897     6195096.975     40     247803879                      conn.begin()
+/home/isucon/isucari/webapp/python/app.py   898        1566.325     40         62653                      sql = "SELECT * FROM `users` WHERE `id` = %s FOR UPDATE"
+/home/isucon/isucari/webapp/python/app.py   899       38948.475     40       1557939                      with conn.cursor() as c:
+/home/isucon/isucari/webapp/python/app.py   900      2038289.55     40      81531582                          c.execute(sql, (user['id'],))
+/home/isucon/isucari/webapp/python/app.py   901         16180.6     40        647224                          seller = c.fetchone()
+/home/isucon/isucari/webapp/python/app.py   902        1439.575     40         57583                          if seller is None:
+/home/isucon/isucari/webapp/python/app.py   903               0      0             0                              conn.rollback()
+/home/isucon/isucari/webapp/python/app.py   904               0      0             0                              http_json_error(requests['not_found'], 'user not found')
+/home/isucon/isucari/webapp/python/app.py   905               0      0             0                          sql = """INSERT INTO `items`
+/home/isucon/isucari/webapp/python/app.py   906               0      0             0                          (`seller_id`, `status`, `name`, `price`, `description`, `image_name`, `category_id`)
+/home/isucon/isucari/webapp/python/app.py   907         1265.75     40         50630                           VALUES (%s, %s, %s, %s, %s, %s, %s)"""
+/home/isucon/isucari/webapp/python/app.py   908          1383.5     40         55340                          c.execute(sql, (
+/home/isucon/isucari/webapp/python/app.py   909        1583.775     40         63351                              seller['id'],
+/home/isucon/isucari/webapp/python/app.py   910          7191.2     40        287648                              Constants.ITEM_STATUS_ON_SALE,
+/home/isucon/isucari/webapp/python/app.py   911       61471.718     39       2397397                              flask.request.form['name'],
+/home/isucon/isucari/webapp/python/app.py   912         45571.7     40       1822868                              flask.request.form['price'],
+/home/isucon/isucari/webapp/python/app.py   913        42188.75     40       1687550                              flask.request.form['description'],
+/home/isucon/isucari/webapp/python/app.py   914        1278.925     40         51157                              imagename,
+/home/isucon/isucari/webapp/python/app.py   915       3950345.1     40     158013804                              flask.request.form['category_id'],
+/home/isucon/isucari/webapp/python/app.py   916               0      0             0                          ))
+/home/isucon/isucari/webapp/python/app.py   917          1425.0     40         57000                          item_id = c.lastrowid
+/home/isucon/isucari/webapp/python/app.py   918         1301.55     40         52062                          sql = "UPDATE `users` SET `num_sell_items`=%s, `last_bump`=%s WHERE `id`=%s"
+/home/isucon/isucari/webapp/python/app.py   919        1393.275     40         55731                          c.execute(sql, (
+/home/isucon/isucari/webapp/python/app.py   920         2037.85     40         81514                              seller['num_sell_items'] + 1,
+/home/isucon/isucari/webapp/python/app.py   921       11003.125     40        440125                              datetime.datetime.now(),
+/home/isucon/isucari/webapp/python/app.py   922     2344634.025     40      93785361                              seller['id'],
+/home/isucon/isucari/webapp/python/app.py   923               0      0             0                          ))
+/home/isucon/isucari/webapp/python/app.py   924      2995953.65     40     119838146                          conn.commit()
+/home/isucon/isucari/webapp/python/app.py   925               0      0             0                  except MySQLdb.Error as err:
+/home/isucon/isucari/webapp/python/app.py   926               0      0             0                      app.logger.exception(err)
+/home/isucon/isucari/webapp/python/app.py   927               0      0             0                      http_json_error(requests.codes['internal_server_error'], "db error")
+/home/isucon/isucari/webapp/python/app.py   928               0      0             0
+/home/isucon/isucari/webapp/python/app.py   929        2230.675     40         89227                  return flask.jsonify({
+/home/isucon/isucari/webapp/python/app.py   930      791337.325     40      31653493                      'id': item_id,
+/home/isucon/isucari/webapp/python/app.py   931               0      0             0                  })
+/home/isucon/isucari/webapp/python/app.py   934               0      0             0              @app.route("/ship", methods=["POST"])
+/home/isucon/isucari/webapp/python/app.py   935               0      0             0              def post_ship():
+/home/isucon/isucari/webapp/python/app.py   936        905315.6     10       9053156                  ensure_valid_csrf_token()
+/home/isucon/isucari/webapp/python/app.py   937     6124311.889      9      55118807                  user = get_user()
+/home/isucon/isucari/webapp/python/app.py   938       53201.333      9        478812                  conn = dbh()
+/home/isucon/isucari/webapp/python/app.py   939       24958.222      9        224624                  with conn.cursor() as c:
+/home/isucon/isucari/webapp/python/app.py   940         828.111      9          7453                      try:
+/home/isucon/isucari/webapp/python/app.py   941         867.556      9          7808                          sql = "SELECT * FROM `transaction_evidences` WHERE `item_id` = %s"
+/home/isucon/isucari/webapp/python/app.py   942     2692206.556      9      24229859                          c.execute(sql, (flask.request.json["item_id"],))
+/home/isucon/isucari/webapp/python/app.py   943       10983.222      9         98849                          transaction_evidence = c.fetchone()
+/home/isucon/isucari/webapp/python/app.py   944       42948.778      9        386539                          if transaction_evidence is None:
+/home/isucon/isucari/webapp/python/app.py   945               0      0             0                              http_json_error(requests.codes["not_found"], "transaction_evidences not found")
+/home/isucon/isucari/webapp/python/app.py   946               0      0             0                      except MySQLdb.Error as err:
+/home/isucon/isucari/webapp/python/app.py   947               0      0             0                          app.logger.exception(err)
+/home/isucon/isucari/webapp/python/app.py   948               0      0             0                          http_json_error(requests.codes['internal_server_error'], "db error")
+/home/isucon/isucari/webapp/python/app.py   949          1752.0      9         15768                  if transaction_evidence["seller_id"] != user["id"]:
+/home/isucon/isucari/webapp/python/app.py   950         19886.0      3         59658                      http_json_error(requests.codes['forbidden'], "権限がありません")
+/home/isucon/isucari/webapp/python/app.py   951               0      0             0
+/home/isucon/isucari/webapp/python/app.py   952         962.833      6          5777                  try:
+/home/isucon/isucari/webapp/python/app.py   953       1921690.2      5       9608451                      conn.begin()
+/home/isucon/isucari/webapp/python/app.py   954         33265.2      5        166326                      with conn.cursor() as c:
+/home/isucon/isucari/webapp/python/app.py   955          1017.2      5          5086                          sql = "SELECT * FROM `items` WHERE `id` = %s"
+/home/isucon/isucari/webapp/python/app.py   956        462472.6      5       2312363                          c.execute(sql, (flask.request.json["item_id"],))
+/home/isucon/isucari/webapp/python/app.py   957         12562.2      5         62811                          item = c.fetchone()
+/home/isucon/isucari/webapp/python/app.py   958          1098.6      5          5493                          if item is None:
+/home/isucon/isucari/webapp/python/app.py   959               0      0             0                              conn.rollback()
+/home/isucon/isucari/webapp/python/app.py   960               0      0             0                              http_json_error(requests.codes["not_found"], "item not found")
+/home/isucon/isucari/webapp/python/app.py   961          3277.2      5         16386                          if item["status"] != Constants.ITEM_STATUS_TRADING:
+/home/isucon/isucari/webapp/python/app.py   962               0      0             0                              conn.rollback()
+/home/isucon/isucari/webapp/python/app.py   963               0      0             0                              http_json_error(requests.codes["forbidden"], "商品が取引中ではありません")
+/home/isucon/isucari/webapp/python/app.py   964               0      0             0
+/home/isucon/isucari/webapp/python/app.py   965          1005.8      5          5029                          sql = "SELECT * FROM `transaction_evidences` WHERE `id` = %s"
+/home/isucon/isucari/webapp/python/app.py   966       1374771.4      5       6873857                          c.execute(sql, (transaction_evidence["id"],))
+/home/isucon/isucari/webapp/python/app.py   967         13433.6      5         67168                          transaction_evidence = c.fetchone()
+/home/isucon/isucari/webapp/python/app.py   968          1123.8      5          5619                          if transaction_evidence is None:
+/home/isucon/isucari/webapp/python/app.py   969               0      0             0                              conn.rollback()
+/home/isucon/isucari/webapp/python/app.py   970               0      0             0                              http_json_error(requests.codes["not_found"], "transaction_evidences not found")
+/home/isucon/isucari/webapp/python/app.py   971          2317.6      5         11588                          if transaction_evidence["status"] != Constants.TRANSACTION_EVIDENCE_STATUS_WAIT_SHIPPING:
+/home/isucon/isucari/webapp/python/app.py   972               0      0             0                              conn.rollback()
+/home/isucon/isucari/webapp/python/app.py   973               0      0             0                              http_json_error(requests.codes['forbidden'], "準備ができていません")
+/home/isucon/isucari/webapp/python/app.py   974               0      0             0
+/home/isucon/isucari/webapp/python/app.py   975           991.2      5          4956                          sql = "SELECT * FROM `shippings` WHERE `transaction_evidence_id` = %s FOR UPDATE"
+/home/isucon/isucari/webapp/python/app.py   976        970043.4      5       4850217                          c.execute(sql, (transaction_evidence["id"],))
+/home/isucon/isucari/webapp/python/app.py   977         12422.0      5         62110                          shipping = c.fetchone()
+/home/isucon/isucari/webapp/python/app.py   978          1095.2      5          5476                          if shipping is None:
+/home/isucon/isucari/webapp/python/app.py   979               0      0             0                              conn.rollback()
+/home/isucon/isucari/webapp/python/app.py   980               0      0             0                              http_json_error(requests.codes["not_found"], "shipping not found")
+/home/isucon/isucari/webapp/python/app.py   981               0      0             0
+/home/isucon/isucari/webapp/python/app.py   982          1006.4      5          5032                          try:
+/home/isucon/isucari/webapp/python/app.py   983       1185057.2      5       5925286                              host = get_shipment_service_url()
+/home/isucon/isucari/webapp/python/app.py   984        2826.833      6         16961                              res = requests.post(host + "/request",
+/home/isucon/isucari/webapp/python/app.py   985        3502.667      6         21016                                                  headers=dict(Authorization=Constants.ISUCARI_API_TOKEN),
+/home/isucon/isucari/webapp/python/app.py   986     731693549.4      5    3658467747                                                  json=dict(reserve_id=shipping["reserve_id"]))
+/home/isucon/isucari/webapp/python/app.py   987        18009.25      8        144074                              res.raise_for_status()
+/home/isucon/isucari/webapp/python/app.py   988               0      0             0                          except (socket.gaierror, requests.HTTPError) as err:
+/home/isucon/isucari/webapp/python/app.py   989               0      0             0                              conn.rollback()
+/home/isucon/isucari/webapp/python/app.py   990               0      0             0                              app.logger.exception(err)
+/home/isucon/isucari/webapp/python/app.py   991               0      0             0                              http_json_error(requests.codes["internal_server_error"], "failed to request to shipment service")
+/home/isucon/isucari/webapp/python/app.py   992               0      0             0
+/home/isucon/isucari/webapp/python/app.py   993        1089.125      8          8713                          sql = "UPDATE `shippings` SET `status` = %s, `img_binary` = %s, `updated_at` = %s WHERE `transaction_evidence_id` = %s"
+/home/isucon/isucari/webapp/python/app.py   994          1443.0      8         11544                          c.execute(sql, (
+/home/isucon/isucari/webapp/python/app.py   995        2069.125      8         16553              Constants.SHIPPING_STATUS_WAIT_PICKUP,
+/home/isucon/isucari/webapp/python/app.py   996          7380.0      8         59040              res.content,
+/home/isucon/isucari/webapp/python/app.py   997          9045.5      8         72364              datetime.datetime.now(),
+/home/isucon/isucari/webapp/python/app.py   998      3319546.75      8      26556374              transaction_evidence["id"],
+/home/isucon/isucari/webapp/python/app.py   999               0      0             0
+/home/isucon/isucari/webapp/python/app.py  1000      3358504.25      8      26868034              mit()
+/home/isucon/isucari/webapp/python/app.py  1001               0      0             0              db.Error as err:
+/home/isucon/isucari/webapp/python/app.py  1002               0      0             0              er.exception(err)
+/home/isucon/isucari/webapp/python/app.py  1003               0      0             0              n_error(requests.codes['internal_server_error'], "db error")
+/home/isucon/isucari/webapp/python/app.py  1004         3586.75      8         28694              .jsonify(dict(
+/home/isucon/isucari/webapp/python/app.py  1005          7450.0      8         59600              ransactions/{}.png".format(transaction_evidence["id"]),
+/home/isucon/isucari/webapp/python/app.py  1006      678497.375      8       5427979              id=shipping["reserve_id"],
+/home/isucon/isucari/webapp/python/app.py  1007               0      0             0
+/home/isucon/isucari/webapp/python/app.py  1010               0      0             0              @app.route("/ship_done", methods=["POST"])
+/home/isucon/isucari/webapp/python/app.py  1011               0      0             0              def post_ship_done():
+/home/isucon/isucari/webapp/python/app.py  1012        522548.4     10       5225484                  ensure_valid_csrf_token()
+/home/isucon/isucari/webapp/python/app.py  1013     8189904.444      9      73709140                  user = get_user()
+/home/isucon/isucari/webapp/python/app.py  1014       63517.111      9        571654                  conn = dbh()
+/home/isucon/isucari/webapp/python/app.py  1015       30791.222      9        277121                  with conn.cursor() as c:
+/home/isucon/isucari/webapp/python/app.py  1016         929.556      9          8366                      try:
+/home/isucon/isucari/webapp/python/app.py  1017         929.111      9          8362                          sql = "SELECT * FROM `transaction_evidences` WHERE `item_id` = %s"
+/home/isucon/isucari/webapp/python/app.py  1018       1221829.0      9      10996461                          c.execute(sql, [flask.request.json["item_id"]])
+/home/isucon/isucari/webapp/python/app.py  1019       13117.111      9        118054                          transaction_evidence = c.fetchone()
+/home/isucon/isucari/webapp/python/app.py  1020       45276.667      9        407490                          if transaction_evidence is None:
+/home/isucon/isucari/webapp/python/app.py  1021               0      0             0                              http_json_error(requests.codes["not_found"], "transaction_evidences not found")
+/home/isucon/isucari/webapp/python/app.py  1022               0      0             0                      except MySQLdb.Error as err:
+/home/isucon/isucari/webapp/python/app.py  1023               0      0             0                          app.logger.exception(err)
+/home/isucon/isucari/webapp/python/app.py  1024               0      0             0                          http_json_error(requests.codes['internal_server_error'], "db error")
+/home/isucon/isucari/webapp/python/app.py  1025        1693.667      9         15243                  if transaction_evidence["seller_id"] != user["id"]:
+/home/isucon/isucari/webapp/python/app.py  1026         20980.0      1         20980                      http_json_error(requests.codes['forbidden'], "権限がありません")
+/home/isucon/isucari/webapp/python/app.py  1027               0      0             0
+/home/isucon/isucari/webapp/python/app.py  1028        1001.125      8          8009                  try:
+/home/isucon/isucari/webapp/python/app.py  1029        84184.25      8        673474                      conn.begin()
+/home/isucon/isucari/webapp/python/app.py  1030         36251.0      8        290008                      with conn.cursor() as c:
+/home/isucon/isucari/webapp/python/app.py  1031           974.0      8          7792                          sql = "SELECT * FROM `items` WHERE `id` = %s"
+/home/isucon/isucari/webapp/python/app.py  1032      460051.125      8       3680409                          c.execute(sql, [flask.request.json["item_id"]])
+/home/isucon/isucari/webapp/python/app.py  1033       13075.125      8        104601                          item = c.fetchone()
+/home/isucon/isucari/webapp/python/app.py  1034        1058.875      8          8471                          if item is None:
+/home/isucon/isucari/webapp/python/app.py  1035               0      0             0                              conn.rollback()
+/home/isucon/isucari/webapp/python/app.py  1036               0      0             0                              http_json_error(requests.codes["not_found"], "item not found")
+/home/isucon/isucari/webapp/python/app.py  1037          2959.5      8         23676                          if item["status"] != Constants.ITEM_STATUS_TRADING:
+/home/isucon/isucari/webapp/python/app.py  1038               0      0             0                              conn.rollback()
+/home/isucon/isucari/webapp/python/app.py  1039               0      0             0                              http_json_error(requests.codes["forbidden"], "商品が取引中ではありません")
+/home/isucon/isucari/webapp/python/app.py  1040               0      0             0
+/home/isucon/isucari/webapp/python/app.py  1041         943.375      8          7547                          sql = "SELECT * FROM `transaction_evidences` WHERE `id` = %s FOR UPDATE"
+/home/isucon/isucari/webapp/python/app.py  1042      421564.714      7       2950953                          c.execute(sql, [transaction_evidence["id"]])
+/home/isucon/isucari/webapp/python/app.py  1043       13792.286      7         96546                          transaction_evidence = c.fetchone()
+/home/isucon/isucari/webapp/python/app.py  1044        1029.286      7          7205                          if transaction_evidence is None:
+/home/isucon/isucari/webapp/python/app.py  1045               0      0             0                              conn.rollback()
+/home/isucon/isucari/webapp/python/app.py  1046               0      0             0                              http_json_error(requests.codes["not_found"], "transaction_evidences not found")
+/home/isucon/isucari/webapp/python/app.py  1047        2389.143      7         16724                          if transaction_evidence["status"] != Constants.TRANSACTION_EVIDENCE_STATUS_WAIT_SHIPPING:
+/home/isucon/isucari/webapp/python/app.py  1048               0      0             0              conn.rollback()
+/home/isucon/isucari/webapp/python/app.py  1049               0      0             0              http_json_error(requests.codes['forbidden'], "準備ができていません")
+/home/isucon/isucari/webapp/python/app.py  1050               0      0             0
+/home/isucon/isucari/webapp/python/app.py  1051         929.571      7          6507              = "SELECT * FROM `shippings` WHERE `transaction_evidence_id` = %s FOR UPDATE"
+/home/isucon/isucari/webapp/python/app.py  1052      426721.714      7       2987052              ecute(sql, [transaction_evidence["id"]])
+/home/isucon/isucari/webapp/python/app.py  1053       12494.857      7         87464              ping = c.fetchone()
+/home/isucon/isucari/webapp/python/app.py  1054        1055.857      7          7391              hipping is None:
+/home/isucon/isucari/webapp/python/app.py  1055               0      0             0              conn.rollback()
+/home/isucon/isucari/webapp/python/app.py  1056               0      0             0              http_json_error(requests.codes["not_found"], "shipping not found")
+/home/isucon/isucari/webapp/python/app.py  1057               0      0             0
+/home/isucon/isucari/webapp/python/app.py  1058     558667302.4      5    2793336512              = api_shipment_status(get_shipment_service_url(), {"reserve_id": shipping["reserve_id"]})
+/home/isucon/isucari/webapp/python/app.py  1059               0      0             0
+/home/isucon/isucari/webapp/python/app.py  1060          3183.2     10         31832              sr["status"] not in (Constants.SHIPPING_STATUS_DONE, Constants.SHIPPING_STATUS_SHIPPING):
+/home/isucon/isucari/webapp/python/app.py  1061         68490.0      3        205470              http_json_error(requests.codes["forbidden"], "shipment service側で配送中か配送完了になっていません")
+/home/isucon/isucari/webapp/python/app.py  1062               0      0             0
+/home/isucon/isucari/webapp/python/app.py  1063         897.714      7          6284              = "UPDATE `shippings` SET `status` = %s, `updated_at` = %s WHERE `transaction_evidence_id` = %s"
+/home/isucon/isucari/webapp/python/app.py  1064          1626.0      7         11382              ecute(sql, (
+/home/isucon/isucari/webapp/python/app.py  1065         911.143      7          6378              ssr["status"],
+/home/isucon/isucari/webapp/python/app.py  1066          7986.0      7         55902              datetime.datetime.now(),
+/home/isucon/isucari/webapp/python/app.py  1067     1553803.143      7      10876622              transaction_evidence["id"],
+/home/isucon/isucari/webapp/python/app.py  1068               0      0             0
+/home/isucon/isucari/webapp/python/app.py  1069               0      0             0
+/home/isucon/isucari/webapp/python/app.py  1070        1018.143      7          7127              = "UPDATE `transaction_evidences` SET `status` = %s, `updated_at` = %s WHERE `id` = %s"
+/home/isucon/isucari/webapp/python/app.py  1071        1044.286      7          7310              ecute(sql, (
+/home/isucon/isucari/webapp/python/app.py  1072        1795.571      7         12569              Constants.TRANSACTION_EVIDENCE_STATUS_WAIT_DONE,
+/home/isucon/isucari/webapp/python/app.py  1073        7004.714      7         49033              datetime.datetime.now(),
+/home/isucon/isucari/webapp/python/app.py  1074     1484176.286      7      10389234              transaction_evidence["id"],
+/home/isucon/isucari/webapp/python/app.py  1075               0      0             0
+/home/isucon/isucari/webapp/python/app.py  1076               0      0             0
+/home/isucon/isucari/webapp/python/app.py  1077     3055380.286      7      21387662              mit()
+/home/isucon/isucari/webapp/python/app.py  1078          2564.0      3          7692              db.Error as err:
+/home/isucon/isucari/webapp/python/app.py  1079               0      0             0              er.exception(err)
+/home/isucon/isucari/webapp/python/app.py  1080               0      0             0              n_error(requests.codes['internal_server_error'], "db error")
+/home/isucon/isucari/webapp/python/app.py  1081      661802.571      7       4632618              .jsonify(dict(transaction_evidence_id=transaction_evidence["id"]))
+/home/isucon/isucari/webapp/python/app.py  1084               0      0             0              @app.route("/complete", methods=["POST"])
+/home/isucon/isucari/webapp/python/app.py  1085               0      0             0              def post_complete():
+/home/isucon/isucari/webapp/python/app.py  1086        486649.0      7       3406543                  ensure_valid_csrf_token()
+/home/isucon/isucari/webapp/python/app.py  1087    10806721.571      7      75647051                    user = get_user()
+/home/isucon/isucari/webapp/python/app.py  1088       49847.286      7        348931                  conn = dbh()
+/home/isucon/isucari/webapp/python/app.py  1089               0      0             0
+/home/isucon/isucari/webapp/python/app.py  1090       25712.571      7        179988                  item_id = flask.request.json["item_id"]
+/home/isucon/isucari/webapp/python/app.py  1091               0      0             0
+/home/isucon/isucari/webapp/python/app.py  1092         23456.0      7        164192                  with conn.cursor() as c:
+/home/isucon/isucari/webapp/python/app.py  1093           721.0      7          5047                      try:
+/home/isucon/isucari/webapp/python/app.py  1094         719.571      7          5037                          sql = "SELECT * FROM `transaction_evidences` WHERE `item_id` = %s"
+/home/isucon/isucari/webapp/python/app.py  1095     1893659.429      7      13255616                           c.execute(sql, (item_id,))
+/home/isucon/isucari/webapp/python/app.py  1096       10357.857      7         72505                          transaction_evidence = c.fetchone()
+/home/isucon/isucari/webapp/python/app.py  1097       41383.143      7        289682                          if transaction_evidence is None:
+/home/isucon/isucari/webapp/python/app.py  1098               0      0             0                              http_json_error(requests.codes["not_found"], "transaction_evidences not found")
+/home/isucon/isucari/webapp/python/app.py  1099               0      0             0                      except MySQLdb.Error as err:
+/home/isucon/isucari/webapp/python/app.py  1100               0      0             0                          app.logger.exception(err)
+/home/isucon/isucari/webapp/python/app.py  1101               0      0             0                          http_json_error(requests.codes['internal_server_error'], "db error")
+/home/isucon/isucari/webapp/python/app.py  1102               0      0             0
+/home/isucon/isucari/webapp/python/app.py  1103        1741.857      7         12193                  if transaction_evidence["buyer_id"] != user["id"]:
+/home/isucon/isucari/webapp/python/app.py  1104               0      0             0                      http_json_error(requests.codes['forbidden'], "権限がありません")
+/home/isucon/isucari/webapp/python/app.py  1105               0      0             0
+/home/isucon/isucari/webapp/python/app.py  1106         877.286      7          6141                  try:
+/home/isucon/isucari/webapp/python/app.py  1107      935519.571      7       6548637                      conn.begin()
+/home/isucon/isucari/webapp/python/app.py  1108       30855.143      7        215986                      with conn.cursor() as c:
+/home/isucon/isucari/webapp/python/app.py  1109         778.571      7          5450                          sql = "SELECT * FROM `items` WHERE `id` = %s FOR UPDATE"
+/home/isucon/isucari/webapp/python/app.py  1110     1396055.571      7       9772389                           c.execute(sql, (item_id,))
+/home/isucon/isucari/webapp/python/app.py  1111       13360.286      7         93522                          item = c.fetchone()
+/home/isucon/isucari/webapp/python/app.py  1112        1048.429      7          7339                          if item is None:
+/home/isucon/isucari/webapp/python/app.py  1113               0      0             0                              conn.rollback()
+/home/isucon/isucari/webapp/python/app.py  1114               0      0             0                              http_json_error(requests.codes["not_found"], "item not found")
+/home/isucon/isucari/webapp/python/app.py  1115        2861.429      7         20030                          if item["status"] != Constants.ITEM_STATUS_TRADING:
+/home/isucon/isucari/webapp/python/app.py  1116               0      0             0                              conn.rollback()
+/home/isucon/isucari/webapp/python/app.py  1117               0      0             0                              http_json_error(requests.codes["forbidden"], "商品が取引中ではありません")
+/home/isucon/isucari/webapp/python/app.py  1118               0      0             0
+/home/isucon/isucari/webapp/python/app.py  1119         955.714      7          6690                          sql = "SELECT * FROM `transaction_evidences` WHERE `item_id` = %s FOR UPDATE"
+/home/isucon/isucari/webapp/python/app.py  1120     5005141.429      7      35035990                           c.execute(sql, (item_id,))
+/home/isucon/isucari/webapp/python/app.py  1121       14490.857      7        101436                          transaction_evidence = c.fetchone()
+/home/isucon/isucari/webapp/python/app.py  1122        1133.571      7          7935                          if transaction_evidence is None:
+/home/isucon/isucari/webapp/python/app.py  1123               0      0             0                              conn.rollback()
+/home/isucon/isucari/webapp/python/app.py  1124               0      0             0                              http_json_error(requests.codes["not_found"], "transaction_evidences not found")
+/home/isucon/isucari/webapp/python/app.py  1125        2087.429      7         14612                          if transaction_evidence["status"] != Constants.TRANSACTION_EVIDENCE_STATUS_WAIT_DONE:
+/home/isucon/isucari/webapp/python/app.py  1126               0      0             0                              conn.rollback()
+/home/isucon/isucari/webapp/python/app.py  1127               0      0             0                              http_json_error(requests.codes['forbidden'], "準備ができていません")
+/home/isucon/isucari/webapp/python/app.py  1128               0      0             0
+/home/isucon/isucari/webapp/python/app.py  1129         939.857      7          6579                          sql = "SELECT * FROM `shippings` WHERE `transaction_evidence_id` = %s FOR UPDATE"
+/home/isucon/isucari/webapp/python/app.py  1130     1169613.714      7       8187296                          c.execute(sql, [transaction_evidence["id"]])
+/home/isucon/isucari/webapp/python/app.py  1131       12930.571      7         90514                          shipping = c.fetchone()
+/home/isucon/isucari/webapp/python/app.py  1132               0      0             0
+/home/isucon/isucari/webapp/python/app.py  1133   316834140.833      6    1901004845                            ssr = api_shipment_status(get_shipment_service_url(), {"reserve_id": shipping["reserve_id"]})
+/home/isucon/isucari/webapp/python/app.py  1134               0      0             0
+/home/isucon/isucari/webapp/python/app.py  1135        2450.667      6         14704                          if ssr["status"] != Constants.SHIPPING_STATUS_DONE:
+/home/isucon/isucari/webapp/python/app.py  1136               0      0             0                              conn.rollback()
+/home/isucon/isucari/webapp/python/app.py  1137               0      0             0                              http_json_error(requests.codes["bad_request"], "shipment service側で配送完了になっていません")
+/home/isucon/isucari/webapp/python/app.py  1138               0      0             0
+/home/isucon/isucari/webapp/python/app.py  1139           762.0      6          4572                          sql = "UPDATE `shippings` SET `status` = %s, `updated_at` = %s WHERE `transaction_evidence_id` = %s"
+/home/isucon/isucari/webapp/python/app.py  1140          1346.0      6          8076                          c.execute(sql, (
+/home/isucon/isucari/webapp/python/app.py  1141           794.5      6          4767                              Constants.SHIPPING_STATUS_DONE,
+/home/isucon/isucari/webapp/python/app.py  1142         10634.0      6         63804                              datetime.datetime.now(),
+/home/isucon/isucari/webapp/python/app.py  1143       3732199.8      5      18660999                              transaction_evidence["id"],
+/home/isucon/isucari/webapp/python/app.py  1144               0      0             0                          ))
+/home/isucon/isucari/webapp/python/app.py  1145               0      0             0
+/home/isucon/isucari/webapp/python/app.py  1146               0      0             0
+/home/isucon/isucari/webapp/python/app.py  1147           786.4      5          3932                          sql = "UPDATE `transaction_evidences` SET `status` = %s, `updated_at` = %s WHERE `id` = %s"
+/home/isucon/isucari/webapp/python/app.py  1148           848.0      5          4240                          c.execute(sql, (
+/home/isucon/isucari/webapp/python/app.py  1149          1767.8      5          8839                              Constants.TRANSACTION_EVIDENCE_STATUS_DONE,
+/home/isucon/isucari/webapp/python/app.py  1150          6312.0      5         31560                              datetime.datetime.now(),
+/home/isucon/isucari/webapp/python/app.py  1151       2030916.2      5      10154581                              transaction_evidence["id"],
+/home/isucon/isucari/webapp/python/app.py  1152               0      0             0                          ))
+/home/isucon/isucari/webapp/python/app.py  1153               0      0             0
+/home/isucon/isucari/webapp/python/app.py  1154           801.2      5          4006                          sql = "UPDATE `items` SET `status` = %s, `updated_at` = %s WHERE `id` = %s"
+/home/isucon/isucari/webapp/python/app.py  1155           861.4      5          4307                          c.execute(sql, (
+/home/isucon/isucari/webapp/python/app.py  1156          1755.8      5          8779                              Constants.ITEM_STATUS_SOLD_OUT,
+/home/isucon/isucari/webapp/python/app.py  1157          6117.2      5         30586                              datetime.datetime.now(),
+/home/isucon/isucari/webapp/python/app.py  1158      2193214.75      4       8772859                              item["id"],
+/home/isucon/isucari/webapp/python/app.py  1159               0      0             0                          ))
+/home/isucon/isucari/webapp/python/app.py  1160               0      0             0
+/home/isucon/isucari/webapp/python/app.py  1161       2632465.5      4      10529862                      conn.commit()
+/home/isucon/isucari/webapp/python/app.py  1162               0      0             0                  except MySQLdb.Error as err:
+/home/isucon/isucari/webapp/python/app.py  1163               0      0             0                      app.logger.exception(err)
+/home/isucon/isucari/webapp/python/app.py  1164               0      0             0                      http_json_error(requests.codes['internal_server_error'], "db error")
+/home/isucon/isucari/webapp/python/app.py  1165        638227.0      4       2552908                  return flask.jsonify(dict(transaction_evidence_id=transaction_evidence["id"]))
+/home/isucon/isucari/webapp/python/app.py  1168               0      0             0              @app.route("/transactions/<transaction_evidence_id>.png", methods=["GET"])
+/home/isucon/isucari/webapp/python/app.py  1169               0      0             0              def get_qrcode(transaction_evidence_id):
+/home/isucon/isucari/webapp/python/app.py  1170           808.8      5          4044                  if transaction_evidence_id:
+/home/isucon/isucari/webapp/python/app.py  1171          2603.0      5         13015                      if not transaction_evidence_id.isdecimal() or int(transaction_evidence_id) <= 0:
+/home/isucon/isucari/webapp/python/app.py  1172               0      0             0                          http_json_error(requests.codes['bad_request'], "incorrect transaction_evidence id")
+/home/isucon/isucari/webapp/python/app.py  1173               0      0             0
+/home/isucon/isucari/webapp/python/app.py  1174       5422772.0      5      27113860                   seller = get_user()
+/home/isucon/isucari/webapp/python/app.py  1175       52114.714      7        364803                  conn = dbh()
+/home/isucon/isucari/webapp/python/app.py  1176               0      0             0
+/home/isucon/isucari/webapp/python/app.py  1177       20966.286      7        146764                  with conn.cursor() as c:
+/home/isucon/isucari/webapp/python/app.py  1178         516.429      7          3615                      try:
+/home/isucon/isucari/webapp/python/app.py  1179         517.857      7          3625                          sql = "SELECT * FROM `transaction_evidences` WHERE `id` = %s"
+/home/isucon/isucari/webapp/python/app.py  1180     5318445.857      7      37229121                           c.execute(sql, (transaction_evidence_id,))
+/home/isucon/isucari/webapp/python/app.py  1181       11098.571      7         77690                          transaction_evidence = c.fetchone()
+/home/isucon/isucari/webapp/python/app.py  1182               0      0             0
+/home/isucon/isucari/webapp/python/app.py  1183         633.286      7          4433                          if transaction_evidence is None:
+/home/isucon/isucari/webapp/python/app.py  1184               0      0             0                              http_json_error(requests.codes['not_found'], "transaction_evidences not found")
+/home/isucon/isucari/webapp/python/app.py  1185               0      0             0
+/home/isucon/isucari/webapp/python/app.py  1186        1141.857      7          7993                          if transaction_evidence["seller_id"] != seller["id"]:
+/home/isucon/isucari/webapp/python/app.py  1187         22163.0      2         44326                              http_json_error(requests.codes['forbidden'], "権限がありません")
+/home/isucon/isucari/webapp/python/app.py  1188               0      0             0
+/home/isucon/isucari/webapp/python/app.py  1189           610.2      5          3051                          sql = "SELECT * FROM `shippings` WHERE `transaction_evidence_id` = %s"
+/home/isucon/isucari/webapp/python/app.py  1190       3089125.2      5      15445626              1664147.0    15.6              c.execute(sql, (transaction_evidence["id"],))
+/home/isucon/isucari/webapp/python/app.py  1191         10241.6      5         51208                9502.0     0.1              shipping = c.fetchone()
+/home/isucon/isucari/webapp/python/app.py  1192               0      0             0
+/home/isucon/isucari/webapp/python/app.py  1193           658.2      5          3291                 591.0     0.0              if shipping is None:
+/home/isucon/isucari/webapp/python/app.py  1194               0      0             0                                                http_json_error(requests.codes['not_found'], "shippings not found")
+/home/isucon/isucari/webapp/python/app.py  1195               0      0             0
+/home/isucon/isucari/webapp/python/app.py  1196          1858.8      5          9294                2531.0     0.0              if shipping["status"] != Constants.SHIPPING_STATUS_WAIT_PICKUP and shipping["status"] != Constants.SHIPPING_STATUS_SHIPPING:
+/home/isucon/isucari/webapp/python/app.py  1197         19856.0      1         19856               19856.0     0.2                  http_json_error(requests.codes['forbidden'], "qrcode not available")
+/home/isucon/isucari/webapp/python/app.py  1198               0      0             0
+/home/isucon/isucari/webapp/python/app.py  1199         40192.0      4        160768                                            if len(shipping["img_binary"]) == 0:
+/home/isucon/isucari/webapp/python/app.py  1200               0      0             0                                                http_json_error(requests.codes['internal_server_error'], "empty qrcode image")
+/home/isucon/isucari/webapp/python/app.py  1201               0      0             0
+/home/isucon/isucari/webapp/python/app.py  1202       53694.667      3        161084               75846.0     0.7          except MySQLdb.Error as err:
+/home/isucon/isucari/webapp/python/app.py  1203               0      0             0                                            app.logger.exception(err)
+/home/isucon/isucari/webapp/python/app.py  1204               0      0             0                                            http_json_error(requests.codes['internal_server_error'], "db error")
+/home/isucon/isucari/webapp/python/app.py  1205               0      0             0
+/home/isucon/isucari/webapp/python/app.py  1206         1130.75      4          4523                                    img_binary = shipping["img_binary"]
+/home/isucon/isucari/webapp/python/app.py  1207       285392.25      4       1141569                                    res = flask.make_response(img_binary)
+/home/isucon/isucari/webapp/python/app.py  1208         42739.0      4        170956                                    res.headers.set('Content-Type', 'image/png')
+/home/isucon/isucari/webapp/python/app.py  1209               0      0             0
+/home/isucon/isucari/webapp/python/app.py  1210           589.0      4          2356                                    return  res
+/home/isucon/isucari/webapp/python/app.py  1266               0      0             0              @app.route("/settings", methods=["GET"])
+/home/isucon/isucari/webapp/python/app.py  1267               0      0             0              def get_settings():
+/home/isucon/isucari/webapp/python/app.py  1268          1079.4     15         16191                  outputs = dict()
+/home/isucon/isucari/webapp/python/app.py  1269    27799736.333     15     416996045                   user = get_user_or_none()
+/home/isucon/isucari/webapp/python/app.py  1270         754.348     23         17350                  if user is not None:
+/home/isucon/isucari/webapp/python/app.py  1271        9082.739     23        208903                      outputs['user'] = to_user_json(user)
+/home/isucon/isucari/webapp/python/app.py  1272       40355.348     23        928173                  outputs['csrf_token'] = flask.session.get('csrf_token', '')
+/home/isucon/isucari/webapp/python/app.py  1273               0      0             0
+/home/isucon/isucari/webapp/python/app.py  1274         652.174     23         15000                  try:
+/home/isucon/isucari/webapp/python/app.py  1275       55631.913     23       1279534                      conn = dbh()
+/home/isucon/isucari/webapp/python/app.py  1276         649.652     23         14942                      sql = "SELECT * FROM `categories`"
+/home/isucon/isucari/webapp/python/app.py  1277       95561.652     23       2197918                      with conn.cursor() as c:
+/home/isucon/isucari/webapp/python/app.py  1278     3224227.696     23      74157237                          c.execute(sql)
+/home/isucon/isucari/webapp/python/app.py  1279       56546.897     39       2205329                          categories = c.fetchall()
+/home/isucon/isucari/webapp/python/app.py  1280               0      0             0                  except MySQLdb.Error as err:
+/home/isucon/isucari/webapp/python/app.py  1281               0      0             0                      app.logger.exception(err)
+/home/isucon/isucari/webapp/python/app.py  1282               0      0             0                      http_json_error(requests.codes['internal_server_error'], "db error")
+/home/isucon/isucari/webapp/python/app.py  1283        1240.615     39         48384                  outputs['categories'] = categories
+/home/isucon/isucari/webapp/python/app.py  1284     3818082.447     38     145087133                  outputs['payment_service_url'] = get_payment_service_url()
+/home/isucon/isucari/webapp/python/app.py  1285               0      0             0
+/home/isucon/isucari/webapp/python/app.py  1286      27086806.5     42    1137645873                    return flask.jsonify(outputs)
+/home/isucon/isucari/webapp/python/app.py  1289               0      0             0              @app.route("/login", methods=["POST"])
+/home/isucon/isucari/webapp/python/app.py  1290               0      0             0              def post_login():
+/home/isucon/isucari/webapp/python/app.py  1291     3111411.569    394    1225896158                   ensure_required_payload(['account_name', 'password'])
+/home/isucon/isucari/webapp/python/app.py  1292         868.254    393        341224                  try:
+/home/isucon/isucari/webapp/python/app.py  1293    19426209.481    393    7634500326                        conn = dbh()
+/home/isucon/isucari/webapp/python/app.py  1294         872.659    393        342955                      sql = "SELECT * FROM `users` WHERE `account_name` = %s"
+/home/isucon/isucari/webapp/python/app.py  1295       48747.379    393      19157720                      with conn.cursor() as c:
+/home/isucon/isucari/webapp/python/app.py  1296     1941949.972    393     763186339                          c.execute(sql, [flask.request.json['account_name']])
+/home/isucon/isucari/webapp/python/app.py  1297       18079.188    393       7105121                          user = c.fetchone()
+/home/isucon/isucari/webapp/python/app.py  1298               0      0             0
+/home/isucon/isucari/webapp/python/app.py  1299         965.369    393        379390                          if user is None or \
+/home/isucon/isucari/webapp/python/app.py  1300   317171996.893    393  124648594779  ******      3                      not bcrypt.checkpw(flask.request.json['password'].encode('utf-8'), user['hashed_password']):
+/home/isucon/isucari/webapp/python/app.py  1301      113259.222      9       1019333                              http_json_error(requests.codes['unauthorized'], 'アカウント名かパスワードが間違えています')
+/home/isucon/isucari/webapp/python/app.py  1302        3644.778      9         32803                  except MySQLdb.Error as err:
+/home/isucon/isucari/webapp/python/app.py  1303               0      0             0                      app.logger.exception(err)
+/home/isucon/isucari/webapp/python/app.py  1304               0      0             0                      http_json_error(requests.codes['internal_server_error'], 'db error')
+/home/isucon/isucari/webapp/python/app.py  1305               0      0             0
+/home/isucon/isucari/webapp/python/app.py  1306      225480.442    419      94476305                  flask.session['user_id'] = user['id']
+/home/isucon/isucari/webapp/python/app.py  1307     1608964.313    419     674156047                    flask.session['csrf_token'] = random_string(10)
+/home/isucon/isucari/webapp/python/app.py  1308        1545.237    418        645909                  return flask.jsonify(
+/home/isucon/isucari/webapp/python/app.py  1309     3148539.581    418    1316089545                       to_user_json(user),
+/home/isucon/isucari/webapp/python/app.py  1310               0      0             0                  )
