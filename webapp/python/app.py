@@ -161,7 +161,9 @@ def get_user_simple_by_id(user_id):
 
 @lru_cache(maxsize=None)
 def get_category_by_id(category_id):
-    category = CATEGORY_MAP[category_id]
+    if category_id not in CATEGORY_MAP:
+        return None
+    category = CATEGORY_MAP[category_id].copy()
     if category['parent_id'] != 0:
         parent = get_category_by_id(category['parent_id'])
         if parent is not None:
