@@ -15,7 +15,7 @@ CREATE TABLE `users` (
   `num_sell_items` int unsigned NOT NULL DEFAULT 0,
   `last_bump` datetime NOT NULL DEFAULT '2000-01-01 00:00:00',
   `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARACTER SET utf8mb4;
+) ENGINE=MEMORY DEFAULT CHARACTER SET utf8mb4;
 
 DROP TABLE IF EXISTS `items`;
 CREATE TABLE `items` (
@@ -71,4 +71,4 @@ CREATE TABLE `categories` (
   `id` int unsigned NOT NULL AUTO_INCREMENT PRIMARY KEY,
   `parent_id` int unsigned NOT NULL,
   `category_name` varchar(191) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARACTER SET utf8mb4;
+) ENGINE=MEMORY DEFAULT CHARACTER SET utf8mb4;
