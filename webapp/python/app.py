@@ -15,7 +15,7 @@ import bcrypt
 import pathlib
 import requests
 
-from functools import lru_cache
+#from functools import lru_cache
 
 base_path = pathlib.Path(__file__).resolve().parent.parent
 static_folder = base_path / 'public'
@@ -157,7 +157,7 @@ def get_user_simple_by_id(user_id):
         http_json_error(requests.codes['internal_server_error'], "db error")
     return user
 
-@lru_cache(maxsize=None)
+#@lru_cache(maxsize=None)
 def get_category_by_id(category_id):
     conn = dbh()
     sql = "SELECT * FROM `categories` WHERE `id` = %s"
@@ -212,7 +212,7 @@ def ensure_valid_csrf_token():
     if flask.request.json['csrf_token'] != flask.session['csrf_token']:
         http_json_error(requests.codes['unprocessable_entity'], "csrf token error")
 
-@lru_cache(maxsize=None)
+#@lru_cache(maxsize=None)
 def get_config(name):
     conn = dbh()
     sql = "SELECT * FROM `configs` WHERE `name` = %s"
@@ -279,7 +279,7 @@ def post_initialize():
                 shipment_service_url
             ))
             conn.commit()
-            get_config.cache_clear()
+            #get_config.cache_clear()
         except MySQLdb.Error as err:
             conn.rollback()
             app.logger.exception(err)
