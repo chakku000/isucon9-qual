@@ -15,6 +15,8 @@ import bcrypt
 import pathlib
 import requests
 
+import asyncio
+
 #from functools import lru_cache
 
 base_path = pathlib.Path(__file__).resolve().parent.parent
@@ -260,8 +262,7 @@ def get_image_url(image_name):
 def post_initialize():
     conn = dbh()
 
-    #subprocess.call(["../sql/init.sh"])
-    os.exec("../sql/init.sh")
+    subprocess.call(["../sql/init.sh"])
 
     payment_service_url = flask.request.json.get('payment_service_url', Constants.DEFAULT_PAYMENT_SERVICE_URL)
     shipment_service_url = flask.request.json.get('shipment_service_url', Constants.DEFAULT_SHIPMENT_SERVICE_URL)
@@ -805,39 +806,52 @@ def post_buy():
             ))
 
             host = get_shipment_service_url()
-            try:
-                res = requests.post(host + "/create",
-                                    headers=dict(Authorization=Constants.ISUCARI_API_TOKEN),
-                                    json=dict(
-                                        to_address=buyer['address'],
-                                        to_name=buyer['account_name'],
-                                        from_address=seller['address'],
-                                            from_name=seller['account_name'],
-                                    ))
-                res.raise_for_status()
-            except (socket.gaierror, requests.HTTPError) as err:
+            async def api_create():
+                try:
+                    res = requests.post(host + "/create",
+                                        headers=dict(Authorization=Constants.ISUCARI_API_TOKEN),
+                                        json=dict(
+                                            to_address=buyer['address'],
+                                            to_name=buyer['account_name'],
+                                            from_address=seller['address'],
+                                                from_name=seller['account_name'],
+                                        ))
+                    res.raise_for_status()
+                    return (res,True)
+                except (socket.gaierror, requests.HTTPError) as err:
+                    return (err,False)
+
+            async def api_token():
+                try:
+                    res = requests.post(host + "/token",
+                                        json=dict(
+                                            shop_id=Constants.PAYMENT_SERVICE_ISUCARI_SHOP_ID,
+                                            api_key=Constants.PAYMENT_SERVICE_ISUCARI_API_KEY,
+                                            token=flask.request.json['token'],
+                                            price=target_item['price'],
+                                        ))
+                    res.raise_for_status()
+                    return (res,True)
+                except (socket.gaierror, requests.HTTPError) as err:
+                    return (err,False)
+
+            loop = asyncio.get_event_loop_policy()
+            coros = [api_create(), api_token()]
+            futures = asyncio.gather(*coros)
+            loop.run_until_complete(futures)
+            fr = futures.result()
+            if fr[0][1] == False or fr[1][1] == False:
                 conn.rollback()
-                app.logger.exception(err)
+                if fr[0][1] == False:
+                    app.logger.exception(fr[0][0])
+                else:
+                    app.logger.exception(fr[0][0])
                 http_json_error(requests.codes['internal_server_error'])
 
-            shipping_res = res.json()
-
+            shipping_res = fr[0][0].json()
             host = get_payment_service_url()
-            try:
-                res = requests.post(host + "/token",
-                                    json=dict(
-                                        shop_id=Constants.PAYMENT_SERVICE_ISUCARI_SHOP_ID,
-                                        api_key=Constants.PAYMENT_SERVICE_ISUCARI_API_KEY,
-                                        token=flask.request.json['token'],
-                                        price=target_item['price'],
-                                    ))
-                res.raise_for_status()
-            except (socket.gaierror, requests.HTTPError) as err:
-                conn.rollback()
-                app.logger.exception(err)
-                http_json_error(requests.codes['internal_server_error'])
+            payment_res = fr[1][0].json()
 
-            payment_res = res.json()
             if payment_res['status'] == "invalid":
                 conn.rollback()
                 http_json_error(requests.codes["bad_request"], "カード情報に誤りがあります")
