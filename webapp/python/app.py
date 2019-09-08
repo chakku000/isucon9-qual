@@ -1359,5 +1359,20 @@ def get_index(*args, **kwargs):
 # Assets
 # @app.route("/*")
 
+def stat_filter(stat):
+    if stat.total_time < 10**8:
+        return False
+    return True
+
+from wsgi_lineprof.filters import FilenameFilter, TotalTimeSorter
+from wsgi_lineprof.middleware import LineProfilerMiddleware
+app.config["PROFILE"] = True
+filters = [
+    FilenameFilter("/mnt/D/works/isucon/isucon9-qual/webapp/python/app.py"),
+    #TotalTimeSorter(),
+    lambda stats: filter(stat_filter, stats),
+]
+app.wsgi_app = LineProfilerMiddleware(app.wsgi_app, filters=filters)
+
 if __name__ == "__main__":
     app.run(port=8000, debug=True, threaded=True)

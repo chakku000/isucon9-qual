@@ -1,6 +1,6 @@
 #!/bin/bash
 set -xe
-set -o pipefail
+#set -eo pipefail
 
 CURRENT_DIR=$(cd $(dirname $0);pwd)
 export MYSQL_HOST=${MYSQL_HOST:-127.0.0.1}
