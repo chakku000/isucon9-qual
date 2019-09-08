@@ -871,7 +871,7 @@ def post_sell():
         http_json_error(requests.codes['bad_request'], "商品価格は100ｲｽｺｲﾝ以上、1,000,000ｲｽｺｲﾝ以下にしてください")
 
     category = get_category_by_id(flask.request.form['category_id'])
-    if category['parent_id'] == 0:
+    if category is None or category['parent_id'] == 0:
         http_json_error(requests.codes['bad_request'], 'Incorrect category ID')
     user = get_user()
 
