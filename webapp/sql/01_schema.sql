@@ -30,7 +30,11 @@ CREATE TABLE `items` (
   `category_id` int unsigned NOT NULL,
   `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  INDEX idx_category_id (`category_id`)
+  INDEX idx_category_id (`category_id`),
+  INDEX idx_status (`status`),
+  INDEX idx_created_at (`created_at`),
+  INDEX idx_seller_id (`seller_id`),
+  INDEX idx_buyer_id (`buyer_id`)
 ) ENGINE=InnoDB DEFAULT CHARACTER SET utf8mb4;
 
 DROP TABLE IF EXISTS `transaction_evidences`;
@@ -66,9 +70,10 @@ CREATE TABLE `shippings` (
   `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARACTER SET utf8mb4;
 
+
 DROP TABLE IF EXISTS `categories`;
 CREATE TABLE `categories` (
   `id` int unsigned NOT NULL AUTO_INCREMENT PRIMARY KEY,
   `parent_id` int unsigned NOT NULL,
   `category_name` varchar(191) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARACTER SET utf8mb4;
+) ENGINE=MEMORY DEFAULT CHARACTER SET utf8mb4;
