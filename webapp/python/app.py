@@ -14,6 +14,8 @@ import bcrypt
 import pathlib
 import requests
 
+from CATEGORY_MAP import category
+
 from functools import lru_cache
 
 base_path = pathlib.Path(__file__).resolve().parent.parent
@@ -156,14 +158,8 @@ def get_user_simple_by_id(user_id):
         http_json_error(requests.codes['internal_server_error'], "db error")
     return user
 
-@lru_cache(maxsize=None)
 def get_category_by_id(category_id):
-    conn = dbh()
-    sql = "SELECT * FROM `categories` WHERE `id` = %s"
-    with conn.cursor() as c:
-        c.execute(sql, (category_id,))
-        category = c.fetchone()
-        # TODO: check err
+    category = CATEGORY_MAP[category_id]
     if category['parent_id'] != 0:
         parent = get_category_by_id(category['parent_id'])
         if parent is not None:
@@ -274,7 +270,6 @@ def post_initialize():
                 shipment_service_url
             ))
             conn.commit()
-            get_config.cache_clear()
         except MySQLdb.Error as err:
             conn.rollback()
             app.logger.exception(err)
@@ -386,19 +381,9 @@ def get_new_category_items(root_category_id=None):
             http_json_error(requests.codes['bad_request'], "created_at param error")
         created_at = int(created_at_str)
 
-    category_ids = []
+    category_ids = [ v for v in CATEGORY_MAP.values() if v['parent_id'] == root_category_id]
     with conn.cursor() as c:
         try:
-            sql = "SELECT id FROM `categories` WHERE parent_id=%s"
-            c.execute(sql, (
-                root_category_id,
-            ))
-
-            while True:
-                category = c.fetchone()
-                if category is None:
-                    break
-                category_ids.append(category["id"])
 
             if item_id > 0 and created_at > 0:
                 sql = _select_from_items_and_users("seller_id") + " WHERE `items`.`status` IN (%s,%s) AND `items`.category_id IN ("+ ",".join(["%s"]*len(category_ids))+ ") AND (`items`.`created_at` < %s OR (`items`.`created_at` < %s AND `items`.`id` < %s)) ORDER BY `items`.`created_at` DESC, `items`.`id` DESC LIMIT %s"
