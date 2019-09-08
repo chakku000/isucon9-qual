@@ -201,7 +201,7 @@ def ensure_valid_csrf_token():
     if flask.request.json['csrf_token'] != flask.session['csrf_token']:
         http_json_error(requests.codes['unprocessable_entity'], "csrf token error")
 
-@lru_cache
+@lru_cache(maxsize=None)
 def get_config(name):
     conn = dbh()
     sql = "SELECT * FROM `configs` WHERE `name` = %s"
