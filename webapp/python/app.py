@@ -768,6 +768,10 @@ def post_buy():
                 conn.rollback()
                 http_json_error(requests.codes['not_found'], "seller not found")
             category = get_category_by_id(target_item['category_id'])
+            if category is None
+                conn.rollback()
+                http_json_error(requests.codes['forbidden'], "権限がありません")
+
             # TODO: check category error
             sql = "INSERT INTO `transaction_evidences` (`seller_id`, `buyer_id`, `status`, `item_id`, `item_name`, " \
                   "`item_price`, `item_description`, `item_category_id`, `item_root_category_id`) " \
@@ -1242,8 +1246,9 @@ def post_bump():
             sql = "UPDATE `users` SET `last_bump`=%s WHERE id=%s"
             c.execute(sql, (now, user['id'],))
 
-            target_item['created_at'] = now
-            target_item['updated_at'] = now
+            sql = "SELECT * FROM `items` WHERE `id` = %s"
+            c.execute(sql, (target_item['id'],))
+            target_item = c.fetchone()
 
         conn.commit()
     except MySQLdb.Error as err:
