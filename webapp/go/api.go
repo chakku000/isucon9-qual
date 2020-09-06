@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"sync"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -181,4 +182,32 @@ func APIShipmentStatus(shipmentURL string, param *APIShipmentStatusReq) (*APIShi
 	}
 
 	return ssr, nil
+}
+
+func APIShipmentStatusMap(shipmentURL string, params []string) map[string]APIShipmentStatusRes {
+	var m sync.Mutex
+	wg := sync.WaitGroup{}
+	res := make(map[string]APIShipmentStatusRes)
+
+	for i := range params {
+		wg.Add(1)
+		go func(idx int){
+			if params[idx] == "" {
+				wg.Done()
+				return
+			}
+			ssr, err := APIShipmentStatus(DefaultShipmentServiceURL, &APIShipmentStatusReq{
+				ReserveID: params[idx],
+			})
+			if err != nil {
+				panic(err)
+			}
+			m.Lock()
+			res[params[idx]] = *ssr
+			m.Unlock()
+			wg.Done()
+		}(i)
+	}
+	wg.Wait()
+	return res
 }

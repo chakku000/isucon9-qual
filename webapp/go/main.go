@@ -21,6 +21,8 @@ import (
 	goji "goji.io"
 	"goji.io/pat"
 	"golang.org/x/crypto/bcrypt"
+
+	_ "net/http/pprof"
 )
 
 const (
@@ -356,6 +358,13 @@ func main() {
 	mux.HandleFunc(pat.Get("/users/setting"), getIndex)
 	// Assets
 	mux.Handle(pat.Get("/*"), http.FileServer(http.Dir("../public")))
+
+	constructCategoryMap()
+
+	go func(){
+		log.Println(http.ListenAndServe(":6060", nil))
+	}()
+
 	log.Fatal(http.ListenAndServe(":8000", mux))
 }
 
@@ -449,10 +458,12 @@ func getShipmentServiceURL() string {
 }
 
 func getIndex(w http.ResponseWriter, r *http.Request) {
+	log.Print("getIndex")
 	templates.ExecuteTemplate(w, "index.html", struct{}{})
 }
 
 func postInitialize(w http.ResponseWriter, r *http.Request) {
+	log.Print("postInitialize\n")
 	ri := reqInitialize{}
 
 	err := json.NewDecoder(r.Body).Decode(&ri)
@@ -564,11 +575,12 @@ func getNewItems(w http.ResponseWriter, r *http.Request) {
 			outputErrorMsg(w, http.StatusNotFound, "seller not found")
 			return
 		}
-		category, err := getCategoryByID(dbx, item.CategoryID)
-		if err != nil {
-			outputErrorMsg(w, http.StatusNotFound, "category not found")
-			return
-		}
+		//category, err := getCategoryByID(dbx, item.CategoryID)
+		//if err != nil {
+		//	outputErrorMsg(w, http.StatusNotFound, "category not found")
+		//	return
+		//}
+		category := *categoryMap[item.CategoryID]
 		itemSimples = append(itemSimples, ItemSimple{
 			ID:         item.ID,
 			SellerID:   item.SellerID,
@@ -645,6 +657,7 @@ func getNewCategoryItems(w http.ResponseWriter, r *http.Request) {
 	var inArgs []interface{}
 	if itemID > 0 && createdAt > 0 {
 		// paging
+		// TODO めっちゃ呼ばれる
 		inQuery, inArgs, err = sqlx.In(
 			"SELECT * FROM `items` WHERE `status` IN (?,?) AND category_id IN (?) AND (`created_at` < ?  OR (`created_at` <= ? AND `id` < ?)) ORDER BY `created_at` DESC, `id` DESC LIMIT ?",
 			ItemStatusOnSale,
@@ -685,18 +698,22 @@ func getNewCategoryItems(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	userMap := gen_sellerMap(items)
+
 	itemSimples := []ItemSimple{}
 	for _, item := range items {
-		seller, err := getUserSimpleByID(dbx, item.SellerID)
-		if err != nil {
-			outputErrorMsg(w, http.StatusNotFound, "seller not found")
-			return
-		}
-		category, err := getCategoryByID(dbx, item.CategoryID)
-		if err != nil {
-			outputErrorMsg(w, http.StatusNotFound, "category not found")
-			return
-		}
+		seller := userMap[item.SellerID]
+		//seller, err := getUserSimpleByID(dbx, item.SellerID)
+		//if err != nil {
+		//	outputErrorMsg(w, http.StatusNotFound, "seller not found")
+		//	return
+		//}
+		category := *categoryMap[item.CategoryID]
+		//category, err := getCategoryByID(dbx, item.CategoryID)
+		//if err != nil {
+		//	outputErrorMsg(w, http.StatusNotFound, "category not found")
+		//	return
+		//}
 		itemSimples = append(itemSimples, ItemSimple{
 			ID:         item.ID,
 			SellerID:   item.SellerID,
@@ -802,7 +819,8 @@ func getUserItems(w http.ResponseWriter, r *http.Request) {
 
 	itemSimples := []ItemSimple{}
 	for _, item := range items {
-		category, err := getCategoryByID(dbx, item.CategoryID)
+		//fmt.Printf("categoryID = %d\n", item.CategoryID)
+		category := *categoryMap[item.CategoryID]
 		if err != nil {
 			outputErrorMsg(w, http.StatusNotFound, "category not found")
 			return
@@ -912,20 +930,32 @@ func getTransactions(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
+	var item_ids []int64
+	for _, item := range items{
+		item_ids = append(item_ids, item.ID)
+	}
+	transactionMap := get_transactions(item_ids)
+	sellerMap := gen_sellerMap(items)
+
+	transactionIDs := make([]int64, 0)
+	for _, item := range items {
+		transactionIDs = append(transactionIDs, transactionMap[item.ID].ID)
+	}
+	shippingMap := getShipmentMap(transactionIDs)
+
+	shippingReserveIDs := make([]string,0)
+	for _, item := range items{
+		transactionEvidence, _ := transactionMap[item.ID]
+		shipping := shippingMap[transactionEvidence.ID]
+		shippingReserveIDs = append(shippingReserveIDs, shipping.ReserveID)
+	}
+	shipmentStatusMap := APIShipmentStatusMap(DefaultShipmentServiceURL, shippingReserveIDs)
+	//fmt.Printf("shipmentStatusMap = %v\n", shipmentStatusMap)
+
 	itemDetails := []ItemDetail{}
 	for _, item := range items {
-		seller, err := getUserSimpleByID(tx, item.SellerID)
-		if err != nil {
-			outputErrorMsg(w, http.StatusNotFound, "seller not found")
-			tx.Rollback()
-			return
-		}
-		category, err := getCategoryByID(tx, item.CategoryID)
-		if err != nil {
-			outputErrorMsg(w, http.StatusNotFound, "category not found")
-			tx.Rollback()
-			return
-		}
+		seller := sellerMap[item.SellerID]
+		category := *categoryMap[item.CategoryID]
 
 		itemDetail := ItemDetail{
 			ID:       item.ID,
@@ -947,8 +977,12 @@ func getTransactions(w http.ResponseWriter, r *http.Request) {
 		}
 
 		if item.BuyerID != 0 {
-			buyer, err := getUserSimpleByID(tx, item.BuyerID)
-			if err != nil {
+			// DONE getUserSimpleByIDの呼び出しを削除
+			//buyer, err := getUserSimpleByID(tx, item.BuyerID)
+			buyer, ok := sellerMap[item.BuyerID]
+			if !ok {
+			//if err != nil {
+				fmt.Println("buyer not found")
 				outputErrorMsg(w, http.StatusNotFound, "buyer not found")
 				tx.Rollback()
 				return
@@ -957,39 +991,12 @@ func getTransactions(w http.ResponseWriter, r *http.Request) {
 			itemDetail.Buyer = &buyer
 		}
 
-		transactionEvidence := TransactionEvidence{}
-		err = tx.Get(&transactionEvidence, "SELECT * FROM `transaction_evidences` WHERE `item_id` = ?", item.ID)
-		if err != nil && err != sql.ErrNoRows {
-			// It's able to ignore ErrNoRows
-			log.Print(err)
-			outputErrorMsg(w, http.StatusInternalServerError, "db error")
-			tx.Rollback()
-			return
-		}
+		// TransactionのN+1を解消
+		transactionEvidence, _ := transactionMap[item.ID]
 
 		if transactionEvidence.ID > 0 {
-			shipping := Shipping{}
-			err = tx.Get(&shipping, "SELECT * FROM `shippings` WHERE `transaction_evidence_id` = ?", transactionEvidence.ID)
-			if err == sql.ErrNoRows {
-				outputErrorMsg(w, http.StatusNotFound, "shipping not found")
-				tx.Rollback()
-				return
-			}
-			if err != nil {
-				log.Print(err)
-				outputErrorMsg(w, http.StatusInternalServerError, "db error")
-				tx.Rollback()
-				return
-			}
-			ssr, err := APIShipmentStatus(getShipmentServiceURL(), &APIShipmentStatusReq{
-				ReserveID: shipping.ReserveID,
-			})
-			if err != nil {
-				log.Print(err)
-				outputErrorMsg(w, http.StatusInternalServerError, "failed to request to shipment service")
-				tx.Rollback()
-				return
-			}
+			shipping := shippingMap[transactionEvidence.ID]
+			ssr := shipmentStatusMap[shipping.ReserveID]
 
 			itemDetail.TransactionEvidenceID = transactionEvidence.ID
 			itemDetail.TransactionEvidenceStatus = transactionEvidence.Status
@@ -1381,7 +1388,9 @@ func postBuy(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	scr, err := APIShipmentCreate(getShipmentServiceURL(), &APIShipmentCreateReq{
+	// DONE DBアクセスを削除
+	//scr, err := APIShipmentCreate(getShipmentServiceURL(), &APIShipmentCreateReq{
+	scr, err := APIShipmentCreate(DefaultShipmentServiceURL, &APIShipmentCreateReq{
 		ToAddress:   buyer.Address,
 		ToName:      buyer.AccountName,
 		FromAddress: seller.Address,
@@ -1551,7 +1560,9 @@ func postShip(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	img, err := APIShipmentRequest(getShipmentServiceURL(), &APIShipmentRequestReq{
+	// DONE DBアクセスを消した
+	//img, err := APIShipmentRequest(getShipmentServiceURL(), &APIShipmentRequestReq{
+	img, err := APIShipmentRequest(DefaultShipmentServiceURL, &APIShipmentRequestReq{
 		ReserveID: shipping.ReserveID,
 	})
 	if err != nil {
@@ -1682,7 +1693,9 @@ func postShipDone(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	ssr, err := APIShipmentStatus(getShipmentServiceURL(), &APIShipmentStatusReq{
+	// DONE DBアクセス削除
+	//ssr, err := APIShipmentStatus(getShipmentServiceURL(), &APIShipmentStatusReq{
+	ssr, err := APIShipmentStatus(DefaultShipmentServiceURL, &APIShipmentStatusReq{
 		ReserveID: shipping.ReserveID,
 	})
 	if err != nil {
@@ -1822,7 +1835,8 @@ func postComplete(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	ssr, err := APIShipmentStatus(getShipmentServiceURL(), &APIShipmentStatusReq{
+	//ssr, err := APIShipmentStatus(getShipmentServiceURL(), &APIShipmentStatusReq{
+	ssr, err := APIShipmentStatus(DefaultShipmentServiceURL, &APIShipmentStatusReq{
 		ReserveID: shipping.ReserveID,
 	})
 	if err != nil {
